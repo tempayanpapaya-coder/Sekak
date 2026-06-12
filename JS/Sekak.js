@@ -374,7 +374,7 @@ function mulaiPermainanNyata() {
     const config = {
         draggable: false,
         position: 'start',
-        pieceTheme: '../Aset/{piece}.png'
+        pieceTheme: 'Aset/{piece}.png'
     };
 
     board = Chessboard('board', config);
