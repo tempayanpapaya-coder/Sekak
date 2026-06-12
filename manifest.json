@@ -28,14 +28,14 @@
       "short_name": "Vs AI",
       "description": "Tantang Stockfish Engine AI lokal",
       "url": "./Sekak.html?mode=ai",
-      "icons": [{ "src": "Aset/icon-192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "Aset/wN.png", "sizes": "192x192" }]
     },
     {
       "name": "Main Online",
       "short_name": "Online",
       "description": "Masuk lobby dan tantang pemain lain secara real-time",
       "url": "./Sekak.html?mode=friend",
-      "icons": [{ "src": "Aset/icon-192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "Aset/bN.png", "sizes": "192x192" }]
     }
   ]
 }
