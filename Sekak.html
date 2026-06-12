@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sekak jowo</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+     <link rel="stylesheet" href="CSS/Sekak.css">
+     
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <link rel="manifest" href="manifest.json">
+
+ 
+</head>
+<body>
+
+<div class="game-container">
+<div id="puzzle-counter-box" style="display: none; background: #b91c1c; color: white; padding: 6px; border-radius: 4px; margin-bottom: 10px; font-weight: bold; font-size: 0.9rem;">
+    ⚠️ SISA JATAH LANGKAH MU: <span id="sisa-langkah">5</span> KALI LAGI!
+</div>
+
+<div id="auth-section" style="padding: 15px; background: #222; color: #fff; margin-bottom: 10px; border-radius: 8px;">
+    <h3>🔑 Masuk Game Catur</h3>
+    <input type="text" id="username-input" placeholder="Masukkan Username Kamu..." style="padding: 8px; width: 200px;">
+    <button onclick="loginPemain()" style="padding: 8px 15px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 4px;">Masuk Online</button>
+    <p id="user-aktif-teks" style="color: #ff9f43; font-weight: bold; margin-top: 5px;"></p>
+    <button onclick="kembaliKeHome()" class="btn-home">
+    🏠 Kembali ke Lobby
+</button>
+
+</div>
+
+<div id="lobby-section" style="display: none; padding: 15px; background: #2c3e50; color: #fff; margin-bottom: 10px; border-radius: 8px;">
+    <h3>👥 Pemain Yang Sedang Online</h3>
+    <ul id="daftar-user-online" style="list-style: none; padding: 0;"></ul>
+    
+    <hr style="border: 0.5px solid #555; margin: 15px 0;">
+    
+    <h3>📩 Kotak Masuk Tantangan</h3>
+    <div id="notifikasi-tantangan">Tidak ada tantangan masuk saat ini.</div>
+</div>
+
+
+    <div class="menu-panel">
+        <div class="menu-row">
+            <label>Mode Permainan:</label>
+            <select id="gameMode" onchange="resetGame()">
+                <option value="friend">Vs Teman</option>
+                <option value="ai" selected>VS COM</option>
+                 <option value="puzzle">Mode 5 Langkah Mati!</option>
+            </select>
+        </div>
+        <div class="menu-row" id="difficultyRow">
+            <label>Tingkat Kesulitan:</label>
+            <select id="aiLevel">
+                <option value="0">Pemula</option>
+                <option value="3" selected>Semi</option>
+                <option value="10">Prestasi</option>
+            </select>
+        </div>
+        <div class="menu-row">
+            <label>Durasi Mikir:</label>
+            <select id="timeLimit" onchange="resetGame()">
+                <option value="60">1 Menit</option>
+                <option value="180">3 Menit</option>
+                <option value="300" selected>5 Menit</option>
+                <option value="600">10 Menit</option>
+            </select>
+        </div>
+    </div>
+    
+      <div id="marquee-duel" class="marquee-container" style="display: none;">
+    <div class="marquee-text">
+        🔥 PERTARUNGAN HARGA DIRI! NO REMATCH! JIKA KALAH WAJIB PINDAH AGAMA! 🤜💥🤛 &nbsp;&nbsp;&nbsp;&nbsp;
+    </div>
+</div>
+    
+    <div id="timer-black" class="timer-container">
+        <span class="timer-label">⚫ HITAM</span>
+        <span id="clock-black">05:00</span>
+    </div>
+<div class="board-wrapper">
+    
+    <div id="board"></div>
+
+    <div id="start-overlay">
+        <div class="overlay-content">
+            <h1>READY?</h1>
+            <p>Atur mode di atas, lalu tekan tombol untuk bertanding.</p>
+            <button class="btn-start" onclick="mulaiPermainanNyata()">START GAME</button>
+        </div>
+    </div>
+    
+    <div id="gameover-overlay" style="display: none;">
+    <div class="gameover-content">
+        <div class="skakmat-animation">SKAKMAT!</div>
+        <div id="taunt-text" class="taunt-style">Aduh... Otakmu perlu diservis, jalan begitu saja tidak lihat! 🤫</div>
+        <button class="btn-rematch" onclick="resetGame()">MAIN LAGI (BALAS DENDAM)</button>
+    </div>
+</div>
+
+
+</div>
+    <div id="board"></div>
+    
+    <div id="timer-white" class="timer-container">
+        <span class="timer-label">⚪ PUTIH (KAMU)</span>
+        <span id="clock-white">05:00</span>
+    </div>
+    
+    <div class="status-box">
+        <span id="status">Memuat game...</span>
+    </div>
+    <button class="btn-reset" onclick="resetGame()">Mulai Ulang Game</button>
+</div>
+
+<script src="JS/stockfish.js"></script>
+<script src="JS/Sekak.js"></script>
+</body>
+</html>
