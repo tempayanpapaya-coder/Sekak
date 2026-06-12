@@ -1,0 +1,41 @@
+{
+  "short_name": "Sekak Jowo",
+  "name": "Sekak Jowo - Game Catur Online & AI",
+  "description": "Game catur modern khas dengan mode VS Computer (Stockfish), Mode Puzzles, dan Multiplayer Online Real-time menggunakan Firebase Firestore.",
+  "icons": [
+    {
+      "src": "Aset/wN.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "Aset/bN.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "index.html",
+  "background_color": "#0d0e12",
+  "theme_color": "#00f2fe",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "categories": ["games", "sports"],
+  "shortcuts": [
+    {
+      "name": "Main vs AI",
+      "short_name": "Vs AI",
+      "description": "Tantang Stockfish Engine AI lokal",
+      "url": "./Sekak.html?mode=ai",
+      "icons": [{ "src": "Aset/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Main Online",
+      "short_name": "Online",
+      "description": "Masuk lobby dan tantang pemain lain secara real-time",
+      "url": "./Sekak.html?mode=friend",
+      "icons": [{ "src": "Aset/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
