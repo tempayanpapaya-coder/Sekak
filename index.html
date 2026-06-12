@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sekak Jowo - Lobby Utama</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00f2fe">
+    
+    <link rel="stylesheet" href="CSS/Sekak.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+<style>
+    body {
+        background: radial-gradient(circle at 50% 50%, #11131a 0%, #08090c 100%);
+    }
+
+    /* Penataan Grid Menu Fitur */
+    .menu-grid {
+        display: block;
+        margin-bottom: 20px;
+    }
+
+    /* Transformasi Kartu Fitur (Say No to Kotak Jadul!) */
+    .fitur-card {
+        background: rgba(31, 34, 47, 0.4);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 24px;
+        border-radius: 16px; /* Lengkungan modern yang estetik */
+        margin-bottom: 20px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Efek Interaktif Keren saat Kursor Menyorot Kartu */
+    .fitur-card:hover {
+        transform: translateY(-5px); /* Kartu sedikit melayang naik */
+        background: rgba(31, 34, 47, 0.7);
+        border-color: rgba(0, 242, 254, 0.4);
+        box-shadow: 0 12px 24px rgba(0, 242, 254, 0.15);
+    }
+
+    .fitur-card h4 {
+        margin: 0 0 10px 0;
+        color: #ff9f43;
+        font-size: 1.2rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-shadow: 0 0 10px rgba(255, 159, 67, 0.2);
+    }
+
+    .fitur-card p {
+        font-size: 0.9rem;
+        color: #cbd5e1;
+        margin: 0 0 18px 0;
+        line-height: 1.5;
+    }
+
+    /* Tombol Pilihan Mode yang Sangat Fluid */
+    .btn-mode {
+        background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.08) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #fff;
+        padding: 12px;
+        width: 100%;
+        border-radius: 10px; /* Menyesuaikan kelengkungan kartu */
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-mode:hover {
+        background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+        color: #0d0e12;
+        border-color: #00f2fe;
+        box-shadow: 0 4px 15px rgba(0, 242, 254, 0.4);
+    }
+
+    /* Baris Daftar User Online */
+    .user-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+
+    .status-dot {
+        height: 9px;
+        width: 9px;
+        background-color: #00b894;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+        box-shadow: 0 0 8px #00b894;
+        animation: kedipStatus 1.5s infinite alternate;
+    }
+
+    @keyframes kedipStatus {
+        0% { opacity: 0.4; }
+        100% { opacity: 1; }
+    }
+
+    /* Penataan Khusus Layar Laptop agar Terbagi Dua Kiri-Kanan */
+    @media (min-width: 768px) {
+        .menu-grid {
+            float: left;
+            width: 48%;
+        }
+        .lobby-wrapper {
+            float: right;
+            width: 48%;
+        }
+    }
+    
+    .logo-wrap{
+position:relative;
+}
+
+.logo{
+width:95px;
+height:95px;
+padding:10px;
+border-radius:28px;
+background:rgba(255,255,255,.08);
+
+border:1px solid rgba(255,255,255,.1);
+
+backdrop-filter:blur(10px);
+
+position:relative;
+z-index:2;
+}
+
+.logo-wrap{
+position:relative;
+width:110px;
+height:110px;
+
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.logo{
+position:relative;
+z-index:10;
+
+width:80px;
+height:80px;
+
+padding:10px;
+border-radius:24px;
+
+background:
+linear-gradient(
+145deg,
+rgba(255,255,255,.16),
+rgba(255,255,255,.04)
+);
+
+backdrop-filter:blur(10px);
+
+border:1px solid rgba(255,255,255,.15);
+
+box-shadow:
+0 10px 30px rgba(0,0,0,.55),
+inset 0 1px 1px rgba(255,255,255,.2);
+
+object-fit:contain;
+}
+
+/* ========================= */
+/* GEAR SYSTEM */
+/* ========================= */
+
+.gear{
+position:absolute;
+border-radius:50%;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+filter:
+drop-shadow(0 0 12px rgba(255,215,120,.4))
+drop-shadow(0 0 30px rgba(212,163,89,.22));
+}
+
+/* ========================= */
+/* FRONT GEAR */
+/* ========================= */
+
+.gear-front{
+width:108px;
+height:108px;
+
+background:
+conic-gradient(
+from 0deg,
+#fff0c2,
+#ffd36b,
+#d4a359,
+#8b5a1f,
+#ffd36b,
+#fff0c2
+);
+
+animation:rotateFront 8s linear infinite;
+
+z-index:2;
+
+/* REAL GEAR TEETH */
+clip-path:polygon(
+100% 50%, 96% 56%, 98% 66%, 91% 70%,
+92% 80%, 83% 81%, 80% 91%, 70% 89%,
+64% 98%, 50% 94%, 36% 98%, 30% 89%,
+20% 91%, 17% 81%, 8% 80%, 9% 70%,
+2% 66%, 4% 56%, 0% 50%, 4% 44%,
+2% 34%, 9% 30%, 8% 20%, 17% 19%,
+20% 9%, 30% 11%, 36% 2%, 50% 6%,
+64% 2%, 70% 11%, 80% 9%, 83% 19%,
+92% 20%, 91% 30%, 98% 34%, 96% 44%
+);
+}
+
+/* INNER METAL */
+.gear-front::before{
+content:"";
+position:absolute;
+inset:12px;
+border-radius:50%;
+
+background:
+radial-gradient(
+circle at top,
+#3a2b1b,
+#120b05 70%
+);
+
+box-shadow:
+inset 0 0 25px rgba(0,0,0,.95),
+inset 0 0 10px rgba(255,255,255,.05),
+0 0 20px rgba(212,163,89,.18);
+}
+
+/* ========================= */
+/* BACK GEAR */
+/* ========================= */
+
+.gear-back{
+width:126px;
+height:126px;
+
+background:
+conic-gradient(
+from 180deg,
+rgba(255,255,255,.35),
+rgba(212,163,89,.5),
+rgba(120,70,20,.6),
+rgba(255,255,255,.3)
+);
+
+opacity:.55;
+
+animation:rotateBack 18s linear infinite reverse;
+
+z-index:1;
+
+clip-path:polygon(
+100% 50%, 95% 58%, 97% 68%, 90% 72%,
+91% 82%, 82% 83%, 78% 92%, 68% 90%,
+58% 97%, 50% 95%, 42% 97%, 32% 90%,
+22% 92%, 18% 83%, 9% 82%, 10% 72%,
+3% 68%, 5% 58%, 0% 50%, 5% 42%,
+3% 32%, 10% 28%, 9% 18%, 18% 17%,
+22% 8%, 32% 10%, 42% 3%, 50% 5%,
+58% 3%, 68% 10%, 78% 8%, 82% 17%,
+91% 18%, 90% 28%, 97% 32%, 95% 42%
+);
+}
+
+/* ========================= */
+/* CORE */
+/* ========================= */
+
+.gear-center{
+position:absolute;
+
+width:24px;
+height:24px;
+
+border-radius:50%;
+
+background:
+radial-gradient(
+circle,
+#fff5d6,
+#d4a359 45%,
+#5b3714 100%
+);
+
+z-index:4;
+
+box-shadow:
+0 0 20px rgba(255,215,120,.8),
+0 0 40px rgba(255,215,120,.35),
+inset 0 2px 5px rgba(255,255,255,.45);
+}
+
+/* ========================= */
+/* ENERGY AURA */
+/* ========================= */
+
+.logo-wrap::after{
+content:"";
+
+position:absolute;
+inset:-30px;
+
+border-radius:50%;
+
+background:
+radial-gradient(
+circle,
+rgba(255,215,120,.22),
+transparent 70%
+);
+
+animation:pulseAura 3s ease-in-out infinite;
+
+z-index:0;
+}
+
+/* ========================= */
+/* ANIMATIONS */
+/* ========================= */
+
+@keyframes rotateFront{
+100%{
+transform:rotate(360deg);
+}
+}
+
+@keyframes rotateBack{
+100%{
+transform:rotate(-360deg);
+}
+}
+
+@keyframes pulseAura{
+
+0%{
+transform:scale(1);
+opacity:.4;
+}
+
+50%{
+transform:scale(1.12);
+opacity:1;
+}
+
+100%{
+transform:scale(1);
+opacity:.4;
+}
+}
+.game-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 25px;
+
+    /* Background premium */
+    background: linear-gradient(
+        145deg,
+        #1f2937,
+        #111827
+    );
+
+    /* Rounded modern */
+    border-radius: 24px;
+
+    /* Glass effect */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    /* Border halus */
+    border: 1px solid rgba(255,255,255,0.08);
+
+    /* Shadow mewah */
+    box-shadow:
+        0 10px 30px rgba(0,0,0,0.4),
+        0 0 40px rgba(0,0,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+
+    /* Animasi */
+    transition: all 0.3s ease;
+}
+
+.game-container:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 15px 40px rgba(0,0,0,0.5),
+        0 0 60px rgba(0,0,0,0.25),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+</style>
+
+</head>
+<body>
+
+<div class="game-container">
+    
+       <div class="logo-wrap">
+
+    <div class="gear gear-back"></div>
+
+    <div class="gear gear-front"></div>
+
+    <div class="gear-center"></div>
+
+    <img src="https://raw.githubusercontent.com/tempayanpapaya-coder/Sekak/refs/heads/main/dragon.png" class="logo">
+
+</div>
+        <p>Kompilasi Catur AI, Puzzles, dan Duel Multiplayer Online</p>
+    </div>
+
+    <div id="auth-section">
+        <h3>🔑 Masuk Gerbang Utama</h3>
+        <input type="text" id="username-input" placeholder="Ketik namamu di sini...">
+        <button onclick="loginPemain()">Masuk Game Catur</button>
+        <p id="user-aktif-teks"></p>
+    </div>
+
+    <div class="menu-grid">
+        <div class="fitur-card">
+            <h4>Mode Komputer AI</h4>
+            <p>Uji strategimu melawan catur legendaris secara online.</p>
+            <button class="btn-mode" onclick="pindahKeGame('ai')">Tantang AI</button>
+        </div>
+        
+        <div class="fitur-card">
+            <h4>Mode Taktis Puzzle</h4>
+            <p>Selesaikan formasi catur mematikan dalam waktu 5 langkah kritis.</p>
+            <button class="btn-mode" onclick="pindahKeGame('puzzle')">Buka Puzzle</button>
+        </div>
+    </div>
+
+    <div class="lobby-wrapper">
+        <div id="lobby-section">
+            <h3>Pemain Yang Sedang Online</h3>
+            <ul id="daftar-user-online" style="list-style: none; padding: 0; margin: 0;">
+                <li style="color:#aaa; text-align: center; padding: 10px;">Silakan masuk log di atas untuk melihat pemain aktif...</li>
+            </ul>
+            
+            <hr style="border: 0; border-top: 1px solid #262936; margin: 15px 0;">
+            
+            <h3>Kotak Masuk Tantangan</h3>
+            <div id="notifikasi-tantangan">Belum ada tantangan masuk.</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- INTEGRASI FIREBASE (Sama seperti Sekak.js) ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyATIQKEoacfqd_P5mBn915gzwbsLQE-va8",
+        authDomain: "spp-unisri-taekwondo.firebaseapp.com",
+        projectId: "spp-unisri-taekwondo",
+        storageBucket: "spp-unisri-taekwondo.firebasestorage.app",
+        messagingSenderId: "888126318699",
+        appId: "1:888126318699:web:6e1ef3d5a49908c2b5692e"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let usernameSaya = "";
+
+    // 1. FUNGSI LOGIN / MASUK ONLINE
+    function loginPemain() {
+        const inputName = document.getElementById('username-input').value.trim();
+        
+        if (inputName === "") {
+            alert("Harap masukkan nama panggungmu!");
+            return;
+        }
+
+        usernameSaya = inputName;
+        
+        // Simpan username ke sessionStorage agar bisa dibaca di halaman Sekak.html nanti
+        sessionStorage.setItem("catur_username", usernameSaya);
+
+        document.getElementById('user-aktif-teks').innerText = "✅ Selamat datang, " + usernameSaya + "!";
+        document.getElementById('username-input').disabled = true;
+        document.getElementById('auth-section').style.background = "#1a231f !important";
+
+        // Daftarkan ke Firestore
+        db.collection("para_pemain").doc(usernameSaya).set({
+            nama: usernameSaya,
+            status: "di_lobby",
+            lawan: "",
+            roomId: "",
+            terakhirOnline: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // Nyalakan radar pemantau
+        pantauLobbyOnline();
+        pantauTantanganMasuk();
+
+        // Otomatis hapus jika user menutup tab/browser
+        window.addEventListener('beforeunload', function () {
+            db.collection("para_pemain").doc(usernameSaya).delete();
+        });
+    }
+
+    // 2. RADAR ONLINE: Menampilkan siapa saja yang ada di lobby utama
+    function pantauLobbyOnline() {
+        db.collection("para_pemain").onSnapshot((snapshot) => {
+            const listUserEl = document.getElementById('daftar-user-online');
+            listUserEl.innerHTML = ""; 
+
+            snapshot.forEach((doc) => {
+                const player = doc.data();
+                
+                if (player.nama !== usernameSaya) {
+                    const li = document.createElement('li');
+                    li.style.margin = "8px 0";
+                    li.style.padding = "10px";
+                    li.style.background = "#1f222f";
+                    li.style.borderRadius = "6px";
+                    li.style.border = "1px solid #2d3246";
+
+                    let tombolAksi = "";
+                    if (player.status === "di_lobby") {
+                        tombolAksi = `<button onclick="kirimTantangan('${player.nama}')" style="background:#007bff; color:white; border:none; padding:4px 8px; cursor:pointer; border-radius:4px; font-weight:bold; font-size:0.8rem;">Tantang ⚔️</button>`;
+                    } else {
+                        tombolAksi = `<span style="color:#94a3b8; font-size:0.8rem; font-style:italic;"> sedang ${player.status}</span>`;
+                    }
+
+                    li.innerHTML = `
+                        <div class="user-row">
+                            <span><span class="status-dot"></span><strong>${player.nama}</strong></span>
+                            ${tombolAksi}
+                        </div>`;
+                    listUserEl.appendChild(li);
+                }
+            });
+
+            if(listUserEl.innerHTML === "") {
+                listUserEl.innerHTML = "<li style='color:#94a3b8; text-align:center; font-size:0.85rem;'>Sepi... Belum ada pemain lain yang masuk.</li>";
+            }
+        });
+    }
+
+    // 3. LOGIKA AKSI: Kirim Tantangan Duel Online
+    function kirimTantangan(namaLawan) {
+        if (!usernameSaya) {
+            alert("Kamu harus klik 'Masuk Online' terlebih dahulu!");
+            return;
+        }
+        
+        const roomId = "room_" + usernameSaya + "_vs_" + namaLawan;
+        sessionStorage.setItem("catur_peran", "w"); // Penantang = Putih
+        sessionStorage.setItem("catur_room_id", roomId);
+
+        // Buat room di database
+        db.collection("room_catur").doc(roomId).set({
+            fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            turn: "w",
+            waktuUpdate: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // Ubah status target korban tantangan
+        db.collection("para_pemain").doc(namaLawan).update({
+            status: "ditantang",
+            lawan: usernameSaya,
+            roomId: roomId
+        });
+
+        // Ubah status kita sendiri
+        db.collection("para_pemain").doc(usernameSaya).update({
+            status: "bermain",
+            lawan: namaLawan,
+            roomId: roomId
+        });
+
+        alert("Tantangan terkirim! Sedang mengalihkanmu ke papan laga...");
+        window.location.href = "Sekak.html?mode=friend";
+    }
+
+    // 4. RADAR MASUK: Menerima Tantangan Masuk
+    function pantauTantanganMasuk() {
+        db.collection("para_pemain").doc(usernameSaya).onSnapshot((doc) => {
+            if (!doc.exists) return;
+            const data = doc.data();
+
+            if (data.status === "ditantang") {
+                const boxNotif = document.getElementById('notifikasi-tantangan');
+                boxNotif.innerHTML = `
+                    <div style="text-align:center; padding:5px;">
+                        <p style="margin:0 0 8px 0;">⚔️ <b>${data.lawan}</b> mengajakmu berduel!</p>
+                        <button onclick="terimaTantangan('${data.lawan}', '${data.roomId}')" style="background:#28a745; color:white; border:none; padding:5px 12px; border-radius:4px; cursor:pointer; font-weight:bold; margin-right:5px;">TERIMA</button>
+                        <button onclick="tolakTantangan('${data.lawan}')" style="background:#dc3545; color:white; border:none; padding:5px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">TOLAK</button>
+                    </div>
+                `;
+            } else {
+                document.getElementById('notifikasi-tantangan').innerText = "Belum ada tantangan masuk.";
+            }
+        });
+    }
+
+    // 5. PENERIMAAN / PENOLAKAN DUEL
+    function terimaTantangan(lawan, roomId) {
+        sessionStorage.setItem("catur_peran", "b"); // Penerima = Hitam
+        sessionStorage.setItem("catur_room_id", roomId);
+
+        db.collection("para_pemain").doc(usernameSaya).update({
+            status: "bermain"
+        });
+
+        window.location.href = "Sekak.html?mode=friend";
+    }
+
+    function tolakTantangan(lawan) {
+        db.collection("para_pemain").doc(usernameSaya).update({
+            status: "di_lobby",
+            lawan: "",
+            roomId: ""
+        });
+        db.collection("para_pemain").doc(lawan).update({
+            status: "di_lobby",
+            lawan: "",
+            roomId: ""
+        });
+    }
+
+    // 6. REDIRECT OFFLINE MODES
+    function pindahKeGame(mode) {
+        window.location.href = `Sekak.html?mode=${mode}`;
+    }
+</script>
+
+</body>
+</html>
