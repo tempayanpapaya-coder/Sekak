@@ -1,0 +1,425 @@
+/* =============================================================================
+   TOMBOL HOME / KEMBALI KE LOBBY (Cyber Glass Design)
+   ============================================================================= */
+.btn-home {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    color: yellow;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px; /* Sudut melengkung modern */
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.btn-home:hover {
+    background: rgba(255, 159, 67, 0.15);
+    color: #ff9f43;
+    border-color: #ff9f43;
+    box-shadow: 0 0 15px rgba(255, 159, 67, 0.3);
+    transform: translateY(-2px);
+}
+
+.btn-home:active {
+    transform: translateY(0);
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #0d0e12;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #e2e8f0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Container utama pembungkus seluruh elemen */
+.game-container {
+    display: block;
+    width: 95%;
+    max-width: 480px;
+    margin: 20px auto;
+    padding: 10px;
+}
+
+/* =============================================================================
+   2. AUTHENTICATION & LOBBY SYSTEM (Desain Kekinian)
+   ============================================================================= */
+#auth-section, #lobby-section {
+    display: block;
+    background: #15171e !important;
+    border: 1px solid #262936;
+    border-radius: 12px !important;
+    padding: 16px !important;
+    margin-bottom: 15px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+#auth-section h3, #lobby-section h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 1.1rem;
+    color: #00f2fe;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#username-input {
+    display: block;
+    width: 100%;
+    background: #1f222f;
+    border: 1px solid #3b4056;
+    border-radius: 6px;
+    padding: 10px 12px;
+    color: #fff;
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+    transition: border-color 0.2s;
+}
+
+#username-input:focus {
+    outline: none;
+    border-color: #00f2fe;
+}
+
+#auth-section button {
+    display: block;
+    width: 100%;
+    background: #00b894 !important;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    transition: background 0.2s, transform 0.1s;
+}
+
+#auth-section button:active {
+    transform: scale(0.98);
+}
+
+/* Daftar User Online di Lobby */
+#daftar-user-online li {
+    display: block;
+    background: #1f222f;
+    border: 1px solid #2d3246;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+}
+
+/* Box Notifikasi Tantangan */
+#notifikasi-tantangan {
+    background: #2a1b1b;
+    border: 1px dashed #ef4444;
+    padding: 10px;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #fca5a5;
+}
+
+/* =============================================================================
+   3. MENU PANEL & CONTROL DROPDOWN
+   ============================================================================= */
+.menu-panel {
+    display: block;
+    background: #15171e;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #262936;
+}
+
+.menu-row {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.menu-row:last-child {
+    margin-bottom: 0;
+}
+
+.menu-row label {
+    display: block;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.menu-panel select {
+    display: block;
+    width: 100%;
+    background: #1f222f;
+    border: 1px solid #3b4056;
+    color: #fff;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+/* =============================================================================
+   4. MARQUEE & PUZZLE COUNTER BAR
+   ============================================================================= */
+#puzzle-counter-box {
+    display: block;
+    background: #7f1d1d !important;
+    border: 1px solid #b91c1c;
+    border-radius: 8px !important;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(185, 28, 28, 0.3);
+}
+
+.marquee-container {
+    display: block;
+    background: #2d1515;
+    border: 1px solid #4c1d15;
+    padding: 6px 0;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.marquee-text {
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: yellow;
+    white-space: nowrap;
+    animation: jalanMarquee 15s linear infinite;
+}
+
+@keyframes jalanMarquee {
+    0% { transform: translate3d(100%, 0, 0); }
+    100% { transform: translate3d(-100%, 0, 0); }
+}
+
+/* =============================================================================
+   5. TIMER CLOCK INDICATOR (Efek Lampu Neon)
+   ============================================================================= */
+.timer-container {
+    display: block;
+    background: #15171e;
+    border: 1px solid #262936;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.timer-label {
+    float: left;
+    font-size: 0.8rem;
+    font-weight: bold;
+    line-height: 20px;
+    color: #94a3b8;
+}
+
+#clock-black, #clock-white {
+    float: right;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.1rem;
+    font-weight: bold;
+    line-height: 20px;
+}
+
+/* Efek lampu menyala saat pemain aktif berpikir */
+.active-timer {
+    border-color: #ff9f43;
+    box-shadow: 0 0 12px rgba(255, 159, 67, 0.4);
+    background: #201a15;
+}
+.active-timer #clock-black, .active-timer #clock-white {
+    color: #ff9f43;
+    text-shadow: 0 0 5px rgba(255, 159, 67, 0.5);
+}
+
+/* =============================================================================
+   6. CHESSBOARD WRAPPER & OVERLAYS (START & GAMEOVER)
+   ============================================================================= */
+.board-wrapper {
+    display: block;
+    position: relative;
+    width: 100%;
+    margin-bottom: 8px;
+    background: #15171e;
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    border: 1px solid #262936;
+}
+
+/* Modifikasi visual Papan Bawaan Chessboard.js */
+#board {
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #1e2230;
+}
+
+/* Lapisan Penutup (Overlay) */
+#start-overlay, #gameover-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(13, 14, 18, 0.92);
+    border-radius: 12px;
+    z-index: 10;
+    text-align: center;
+}
+
+.overlay-content, .gameover-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+}
+
+.overlay-content h1 {
+    font-size: 2.5rem;
+    margin: 0 0 10px 0;
+    color: #00f2fe;
+    letter-spacing: 2px;
+    text-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+}
+
+.overlay-content p {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    margin-bottom: 20px;
+}
+
+/* =============================================================================
+   7. PREMIUM BUTTONS & INTERACTIVE STATE
+   ============================================================================= */
+.btn-start, .btn-rematch, .btn-reset {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-start {
+    background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+    color: #0d0e12;
+    box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
+}
+
+.skakmat-animation {
+    font-size: 2rem;
+    font-weight: 900;
+    color: #ef4444;
+    text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+    margin-bottom: 10px;
+    animation: pulse 1s infinite alternate;
+}
+
+.taunt-style {
+    font-size: 0.9rem;
+    color: #cbd5e1;
+    margin-bottom: 20px;
+    line-height: 1.4;
+    font-style: italic;
+}
+
+.btn-rematch {
+    background: linear-gradient(135deg, #f51b51 0%, #b91c1c 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(185, 28, 28, 0.4);
+}
+
+.btn-reset {
+    background: #1c1f2c;
+    color: #94a3b8;
+    border: 1px solid #33394f;
+    margin-top: 10px;
+}
+
+.btn-reset:hover {
+    background: #25293a;
+    color: #fff;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.05); }
+}
+
+/* =============================================================================
+   8. STATUS GAME BOX
+   ============================================================================= */
+.status-box {
+    display: block;
+    background: #15171e;
+    border: 1px solid #262936;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #00f2fe;
+}
+
+/* =============================================================================
+   9. RESPONSIVE MEDIA QUERIES (Laptop & Desktop Optimization)
+   ============================================================================= */
+@media (min-width: 768px) {
+    .game-container {
+        max-width: 900px;
+        padding: 20px;
+    }
+
+    /* Penataan layout halaman ganda khusus Laptop agar tidak memanjang ke bawah */
+    #auth-section, #lobby-section, .menu-panel {
+        float: left;
+        width: 35%;
+        margin-right: 3%;
+    }
+
+    .timer-container, .board-wrapper, .status-box, .btn-reset, #marquee-duel, #puzzle-counter-box {
+        float: right;
+        width: 62%;
+    }
+    
+    #marquee-duel, #puzzle-counter-box {
+        float: none;
+        display: block;
+        margin-left: 38%;
+        width: 62%;
+    }
+
+    .btn-reset {
+        margin-top: 15px;
+    }
+}
+
+/* Pembersihan Float agar kontainer tidak ambruk */
+.game-container::after {
+    content: "";
+    display: table;
+    clear: both;
+}
