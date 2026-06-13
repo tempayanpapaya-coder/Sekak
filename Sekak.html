@@ -87,35 +87,40 @@
         </div>
     </div>
     
-    <div id="timer-black" class="timer-container" style="margin-top: 10px;">
+<div id="timer-wrapper-top">
+    <div id="timer-black" class="timer-container">
         <span class="timer-label">⚫ HITAM</span>
         <span id="clock-black">05:00</span>
     </div>
+</div>
 
-    <div class="board-wrapper" style="position: relative; margin: 15px 0;">
-        <div id="board" style="width: 100%;"></div>
+<div class="board-wrapper">
+    <div id="board"></div>
 
-        <div id="start-overlay">
-            <div class="overlay-content">
-                <h1>READY?</h1>
-                <p>Atur mode di atas, lalu tekan tombol untuk bertanding.</p>
-                <button class="btn-start" onclick="mulaiPermainanNyata()">START GAME</button>
-            </div>
-        </div>
-        
-        <div id="gameover-overlay" style="display: none;">
-            <div class="gameover-content">
-                <div class="skakmat-animation">SKAKMAT!</div>
-                <div id="taunt-text" class="taunt-style">Aduh... Otakmu perlu diservis! 🤫</div>
-                <button class="btn-rematch" onclick="resetGame()">MAIN LAGI (BALAS DENDAM)</button>
-            </div>
+    <div id="start-overlay">
+        <div class="overlay-content">
+            <h1>READY?</h1>
+            <p>Atur mode di atas, lalu tekan tombol untuk bertanding.</p>
+            <button class="btn-start" onclick="mulaiPermainanNyata()">START GAME</button>
         </div>
     </div>
     
+    <div id="gameover-overlay" style="display: none;">
+        <div class="gameover-content">
+            <div class="skakmat-animation">SKAKMAT!</div>
+            <div id="taunt-text" class="taunt-style">Aduh... Otakmu perlu diservis! 🤫</div>
+            <button class="btn-rematch" onclick="resetGame()">MAIN LAGI</button>
+        </div>
+    </div>
+</div>
+
+<div id="timer-wrapper-bottom">
     <div id="timer-white" class="timer-container">
         <span class="timer-label">⚪ PUTIH (KAMU)</span>
         <span id="clock-white">05:00</span>
     </div>
+</div>
+
     
     <div class="status-box" style="margin-top: 15px; text-align: center;">
         <span id="status">Memuat game...</span>
