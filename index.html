@@ -14,821 +14,137 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
 <style>
-/* =========================
-   BACKGROUND GLOBAL
-========================= */
-
-body{
+body {
     margin:0;
     padding:20px;
     min-height:100vh;
-
     background:
     radial-gradient(circle at top left,#25304f 0%,transparent 35%),
     radial-gradient(circle at bottom right,#4b1f28 0%,transparent 35%),
     linear-gradient(135deg,#0f1117,#161b26,#0f1117);
-
     font-family:'Segoe UI',sans-serif;
     color:#fff;
 }
-
-/* =========================
-   CONTAINER UTAMA
-========================= */
-
-.game-container{
-    max-width:1200px;
-    margin:auto;
-
-    background:rgba(18,21,30,.75);
-
-    backdrop-filter:blur(20px);
-    -webkit-backdrop-filter:blur(20px);
-
-    border:1px solid rgba(255,255,255,.08);
-
-    border-radius:28px;
-
-    padding:30px;
-
-    box-shadow:
-    0 20px 50px rgba(0,0,0,.5),
-    inset 0 1px 0 rgba(255,255,255,.08);
-
-    overflow:hidden;
-    position:relative;
+.lobby-container {
+    max-width: 500px;
+    margin: 80px auto;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
 }
-
-.game-container::before{
-    content:'';
-    position:absolute;
-    inset:0;
-
-    background:
-    linear-gradient(
-    130deg,
-    rgba(255,215,0,.04),
-    transparent 40%,
-    rgba(255,255,255,.02)
-    );
-
-    pointer-events:none;
+h1 {
+    font-size: 28px;
+    margin-bottom: 5px;
+    background: linear-gradient(45deg, #00f2fe, #4facfe);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
-
-/* =========================
-   TAGLINE
-========================= */
-
-.text{
-    text-align:center;
-    margin-bottom:25px;
+.subtitle {
+    color: #aaa;
+    font-size: 14px;
+    margin-bottom: 25px;
 }
-
-.text p{
-    margin:0;
-
-    font-size:17px;
-    font-weight:600;
-    letter-spacing:1.5px;
-
-    background:
-    linear-gradient(
-    90deg,
-    #ffd700,
-    #ffffff,
-    #ffd700
-    );
-
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
-
-    text-shadow:
-    0 0 15px rgba(255,215,0,.2);
+input[type="text"] {
+    width: 100%;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: white;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: 0.3s;
 }
-
-/* =========================
-   LOGO AREA
-========================= */
-
-.logo-wrap{
-    position:relative;
-
-    width:220px;
-    height:220px;
-
-    margin:20px auto 35px;
-
-    display:flex;
-    justify-content:center;
-    align-items:center;
+input[type="text"]:focus {
+    border-color: #00f2fe;
+    outline: none;
+    box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
 }
-
-.logo{
-    width:130px;
-    z-index:5;
-
-    filter:
-    drop-shadow(0 0 25px rgba(255,215,0,.4));
-
-    transition:.4s;
+.btn-masuk {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(45deg, #00f2fe, #4facfe);
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
+    transition: 0.3s;
 }
-
-.logo:hover{
-    transform:scale(1.08);
-}
-
-.gear{
-    position:absolute;
-    border-radius:50%;
-    border:6px solid rgba(255,215,0,.8);
-}
-
-.gear-back{
-    width:190px;
-    height:190px;
-
-    animation:spin 18s linear infinite;
-}
-
-.gear-front{
-    width:150px;
-    height:150px;
-
-    border-color:#8ab4ff;
-
-    animation:spinreverse 12s linear infinite;
-}
-
-.gear-center{
-    position:absolute;
-
-    width:24px;
-    height:24px;
-
-    background:#ffd700;
-    border-radius:50%;
-
-    z-index:4;
-}
-
-@keyframes spin{
-    from{transform:rotate(0deg);}
-    to{transform:rotate(360deg);}
-}
-
-@keyframes spinreverse{
-    from{transform:rotate(360deg);}
-    to{transform:rotate(0deg);}
-}
-
-/* =========================
-   LOGIN
-========================= */
-
-#auth-section{
-    background:rgba(255,255,255,.04);
-
-    border:1px solid rgba(255,255,255,.08);
-
-    border-radius:20px;
-
-    padding:25px;
-
-    margin-bottom:30px;
-
-    text-align:center;
-}
-
-#auth-section h3{
-    margin-top:0;
-    color:#ffd700;
-}
-
-#username-input{
-    width:100%;
-    max-width:350px;
-
-    padding:14px;
-
-    border:none;
-    outline:none;
-
-    border-radius:12px;
-
-    background:#1f2430;
-    color:white;
-
-    margin-bottom:15px;
-}
-
-#auth-section button{
-    border:none;
-
-    padding:14px 28px;
-
-    border-radius:12px;
-
-    cursor:pointer;
-
-    font-weight:700;
-
-    background:
-    linear-gradient(
-    135deg,
-    #ffd700,
-    #ffb300
-    );
-
-    color:#111;
-
-    transition:.3s;
-}
-
-#auth-section button:hover{
-    transform:translateY(-2px);
-    box-shadow:0 10px 25px rgba(255,215,0,.35);
-}
-
-/* =========================
-   MENU MODE
-========================= */
-
-.menu-grid{
-    display:grid;
-
-    grid-template-columns:
-    repeat(auto-fit,minmax(280px,1fr));
-
-    gap:20px;
-
-    margin-bottom:30px;
-}
-
-.fitur-card{
-    background:
-    linear-gradient(
-    145deg,
-    rgba(255,255,255,.05),
-    rgba(255,255,255,.02)
-    );
-
-    border:1px solid rgba(255,255,255,.08);
-
-    border-radius:20px;
-
-    padding:24px;
-
-    transition:.3s;
-}
-
-.fitur-card:hover{
-    transform:translateY(-6px);
-
-    box-shadow:
-    0 15px 35px rgba(0,0,0,.35);
-}
-
-.fitur-card h4{
-    color:#ffd700;
-    margin-top:0;
-}
-
-.fitur-card p{
-    color:#c9d1d9;
-    line-height:1.6;
-}
-
-.btn-mode{
-    width:100%;
-
-    border:none;
-
-    padding:14px;
-
-    border-radius:12px;
-
-    cursor:pointer;
-
-    font-weight:700;
-
-    background:
-    linear-gradient(
-    135deg,
-    #4e7fff,
-    #2563eb
-    );
-
-    color:white;
-
-    transition:.3s;
-}
-
-.btn-mode:hover{
-    transform:translateY(-2px);
-}
-
-/* =========================
-   LOBBY
-========================= */
-
-.lobby-wrapper{
-    margin-top:20px;
-}
-
-#lobby-section{
-    background:rgba(255,255,255,.04);
-
-    border:1px solid rgba(255,255,255,.08);
-
-    border-radius:20px;
-
-    padding:25px;
-}
-
-#lobby-section h3{
-    color:#ffd700;
-}
-
-#daftar-user-online li{
-    padding:12px;
-    margin-bottom:8px;
-
-    background:#1c2230;
-
-    border-radius:10px;
-}
-
-#notifikasi-tantangan{
-    background:#1c2230;
-
-    padding:15px;
-
-    border-radius:10px;
-
-    color:#d6d6d6;
-}
-
-/* =========================
-   MOBILE
-========================= */
-
-@media(max-width:768px){
-
-    .game-container{
-        padding:18px;
-    }
-
-    .logo-wrap{
-        width:180px;
-        height:180px;
-    }
-
-    .logo{
-        width:105px;
-    }
-
-    .text p{
-        font-size:14px;
-    }
-
-}
-.gear-back::before{
-    content:'';
-    position:absolute;
-    inset:20px;
-    border-radius:50%;
-    background:transparent;
-    border:3px solid rgba(78,163,255,.7);
-}
-
-.gear-front::before{
-    content:'';
-    position:absolute;
-    inset:15px;
-    border-radius:50%;
-    background:transparent;
-    border:2px solid rgba(255,255,255,.5);
-}
-/* =========================
-   LOGO AREA
-========================= */
-
-.logo-wrap{
-    position:relative;
-    width:260px;
-    height:260px;
-    margin:20px auto 40px;
-
-    display:flex;
-    justify-content:center;
-    align-items:center;
-}
-
-/* =========================
-   LOGO NAGA
-========================= */
-
-.logo{
-    width:140px;
-    position:relative;
-    z-index:20;
-
-    filter:
-        drop-shadow(0 0 15px rgba(255,215,0,.45))
-        drop-shadow(0 0 30px rgba(255,215,0,.25));
-
-    transition:.4s ease;
-}
-
-.logo:hover{
-    transform:scale(1.06);
-}
-
-/* =========================
-   GEAR DASAR
-========================= */
-
-.gear{
-    position:absolute;
-    border-radius:50%;
-}
-
-/* =========================
-   GEAR BELAKANG
-========================= */
-
-.gear-back{
-    width:220px;
-    height:220px;
-
-    background:
-    repeating-conic-gradient(
-        from 0deg,
-        #4da3ff 0deg 8deg,
-        transparent 8deg 16deg
-    );
-
-    animation:spin 20s linear infinite;
-
-    filter:
-        drop-shadow(0 0 15px rgba(77,163,255,.7))
-        drop-shadow(0 0 35px rgba(77,163,255,.3));
-}
-
-.gear-back::before{
-    content:'';
-
-    position:absolute;
-    inset:18px;
-
-    border-radius:50%;
-
-    background:
-    radial-gradient(
-        circle,
-        rgba(10,20,40,.95),
-        rgba(5,10,20,1)
-    );
-
-    border:3px solid rgba(77,163,255,.8);
-}
-
-/* =========================
-   GEAR DEPAN
-========================= */
-
-.gear-front{
-    width:165px;
-    height:165px;
-
-    background:
-    repeating-conic-gradient(
-        from 0deg,
-        #d7dee8 0deg 10deg,
-        transparent 10deg 20deg
-    );
-
-    animation:spinReverse 12s linear infinite;
-
-    filter:
-        drop-shadow(0 0 10px rgba(255,255,255,.35));
-}
-
-.gear-front::before{
-    content:'';
-
-    position:absolute;
-    inset:14px;
-
-    border-radius:50%;
-
-    background:
-    radial-gradient(
-        circle,
-        rgba(10,20,40,.95),
-        rgba(5,10,20,1)
-    );
-
-    border:2px solid rgba(215,222,232,.8);
-}
-
-/* =========================
-   RING ENERGI
-========================= */
-
-.logo-wrap::after{
-    content:'';
-
-    position:absolute;
-
-    width:240px;
-    height:240px;
-
-    border-radius:50%;
-
-    border:1px solid rgba(255,215,0,.25);
-
-    animation:pulse 3s ease-in-out infinite;
-
-    z-index:1;
-}
-
-/* =========================
-   ANIMASI
-========================= */
-
-@keyframes spin{
-    from{
-        transform:rotate(0deg);
-    }
-    to{
-        transform:rotate(360deg);
-    }
-}
-
-@keyframes spinReverse{
-    from{
-        transform:rotate(360deg);
-    }
-    to{
-        transform:rotate(0deg);
-    }
-}
-
-@keyframes pulse{
-    0%{
-        transform:scale(1);
-        opacity:.4;
-    }
-
-    50%{
-        transform:scale(1.04);
-        opacity:.9;
-    }
-
-    100%{
-        transform:scale(1);
-        opacity:.4;
-    }
+.btn-masuk:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 242, 254, 0.5);
 }
 </style>
-
 </head>
 <body>
 
-<div class="game-container">
- <div class="text">
-    <p>Kompilasi Catur AI, Puzzles, dan Duel Multiplayer Online</p>
-</div>
+<div class="lobby-container">
+    <h1>♟️ SEKAK JOWO</h1>
+    <div class="subtitle">Sistem Registrasi Akun & Lobby Catur Online</div>
     
-       <div class="logo-wrap">
-
-    <div class="gear gear-back"></div>
-
-    <div class="gear gear-front"></div>
-
- 
-
-    <img src="https://raw.githubusercontent.com/tempayanpapaya-coder/Sekak/refs/heads/main/dragon.png" class="logo">
-
-</div>
-</div>
-
-
-    <div id="auth-section">
-        <h3>🔑 Masuk Gerbang Utama</h3>
-        <input type="text" id="username-input" placeholder="Ketik namamu di sini...">
-        <button onclick="loginPemain()">Masuk Game Catur</button>
-        <p id="user-aktif-teks"></p>
-    </div>
-
-    <div class="menu-grid">
-        <div class="fitur-card">
-            <h4>Mode Komputer AI</h4>
-            <p>Uji strategimu melawan catur legendaris secara online.</p>
-            <button class="btn-mode" onclick="pindahKeGame('ai')">Tantang AI</button>
-        </div>
-        
-        <div class="fitur-card">
-            <h4>Mode Taktis Puzzle</h4>
-            <p>Selesaikan formasi catur mematikan dalam waktu 5 langkah kritis.</p>
-            <button class="btn-mode" onclick="pindahKeGame('puzzle')">Buka Puzzle</button>
-        </div>
-    </div>
-
-    <div class="lobby-wrapper">
-        <div id="lobby-section">
-            <h3>Pemain Yang Sedang Online</h3>
-            <ul id="daftar-user-online" style="list-style: none; padding: 0; margin: 0;">
-                <li style="color:#aaa; text-align: center; padding: 10px;">Silakan masuk log di atas untuk melihat pemain aktif...</li>
-            </ul>
-            
-            <hr style="border: 0; border-top: 1px solid #262936; margin: 15px 0;">
-            
-            <h3>Kotak Masuk Tantangan</h3>
-            <div id="notifikasi-tantangan">Belum ada tantangan masuk.</div>
-        </div>
-    </div>
-
+    <input type="text" id="input-nama-pemain" placeholder="Masukkan Nama / Username Kamu..." autocomplete="off">
+    <button class="btn-masuk" onclick="prosesLoginOtomatis()">MASUK KE PERMAINAN</button>
 </div>
 
 <script>
-    // --- INTEGRASI FIREBASE (Sama seperti Sekak.js) ---
-    const firebaseConfig = {
-        apiKey: "AIzaSyATIQKEoacfqd_P5mBn915gzwbsLQE-va8",
-        authDomain: "spp-unisri-taekwondo.firebaseapp.com",
-        projectId: "spp-unisri-taekwondo",
-        storageBucket: "spp-unisri-taekwondo.firebasestorage.app",
-        messagingSenderId: "888126318699",
-        appId: "1:888126318699:web:6e1ef3d5a49908c2b5692e"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+// =============================================================================
+// CONFIG FIREBASE (SINKRON DENGAN SEKAK.JS)
+// =============================================================================
+const firebaseConfig = {
+    apiKey: "AIzaSyATIQKEoacfqd_P5mBn915gzwbsLQE-va8",
+    authDomain: "spp-unisri-taekwondo.firebaseapp.com",
+    projectId: "spp-unisri-taekwondo",
+    storageBucket: "spp-unisri-taekwondo.firebasestorage.app",
+    messagingSenderId: "888126318699",
+    appId: "1:888126318699:web:6e1ef3d5a49908c2b5692e"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-    let usernameSaya = "";
+// =============================================================================
+// FUNGSI LOGIK LOGIN & REDIRECT OTOMATIS
+// =============================================================================
+function prosesLoginOtomatis() {
+    const namaInput = document.getElementById('input-nama-pemain').value.trim();
 
-    // 1. FUNGSI LOGIN / MASUK ONLINE
-    function loginPemain() {
-        const inputName = document.getElementById('username-input').value.trim();
+    // Validasi input kosong
+    if (namaInput === "") {
+        alert("Nama tidak boleh kosong! Silakan masukkan nama kamu.");
+        return;
+    }
+
+    // 1. Simpan data identitas ke dalam Session Storage Browser
+    sessionStorage.setItem("catur_username", namaInput);
+    sessionStorage.setItem("catur_peran", "w"); // Default peran awal sebagai Putih
+    sessionStorage.setItem("catur_room_id", "");  // Belum ada room sebelum membuat/menerima tantangan
+
+    // 2. Daftarkan status online pemain ke database Firestore secara realtime
+    db.collection("para_pemain").doc(namaInput).set({
+        status: "di_lobby", // Menandakan pemain siap di-lobby online
+        lawan: "",
+        roomId: "",
+        waktuLogin: firebase.firestore.FieldValue.serverTimestamp()
+    })
+    .then(() => {
+        console.log("Pendaftaran Akun Berhasil!");
         
-        if (inputName === "") {
-            alert("Harap masukkan nama panggungmu!");
-            return;
-        }
-
-        usernameSaya = inputName;
-        
-        // Simpan username ke sessionStorage agar bisa dibaca di halaman Sekak.html nanti
-        sessionStorage.setItem("catur_username", usernameSaya);
-
-        document.getElementById('user-aktif-teks').innerText = "✅ Selamat datang, " + usernameSaya + "!";
-        document.getElementById('username-input').disabled = true;
-        document.getElementById('auth-section').style.background = "#1a231f !important";
-
-        // Daftarkan ke Firestore
-        db.collection("para_pemain").doc(usernameSaya).set({
-            nama: usernameSaya,
-            status: "di_lobby",
-            lawan: "",
-            roomId: "",
-            terakhirOnline: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        // Nyalakan radar pemantau
-        pantauLobbyOnline();
-        pantauTantanganMasuk();
-
-        // Otomatis hapus jika user menutup tab/browser
-        window.addEventListener('beforeunload', function () {
-            db.collection("para_pemain").doc(usernameSaya).delete();
-        });
-    }
-
-    // 2. RADAR ONLINE: Menampilkan siapa saja yang ada di lobby utama
-    function pantauLobbyOnline() {
-        db.collection("para_pemain").onSnapshot((snapshot) => {
-            const listUserEl = document.getElementById('daftar-user-online');
-            listUserEl.innerHTML = ""; 
-
-            snapshot.forEach((doc) => {
-                const player = doc.data();
-                
-                if (player.nama !== usernameSaya) {
-                    const li = document.createElement('li');
-                    li.style.margin = "8px 0";
-                    li.style.padding = "10px";
-                    li.style.background = "#1f222f";
-                    li.style.borderRadius = "6px";
-                    li.style.border = "1px solid #2d3246";
-
-                    let tombolAksi = "";
-                    if (player.status === "di_lobby") {
-                        tombolAksi = `<button onclick="kirimTantangan('${player.nama}')" style="background:#007bff; color:white; border:none; padding:4px 8px; cursor:pointer; border-radius:4px; font-weight:bold; font-size:0.8rem;">Tantang ⚔️</button>`;
-                    } else {
-                        tombolAksi = `<span style="color:#94a3b8; font-size:0.8rem; font-style:italic;"> sedang ${player.status}</span>`;
-                    }
-
-                    li.innerHTML = `
-                        <div class="user-row">
-                            <span><span class="status-dot"></span><strong>${player.nama}</strong></span>
-                            ${tombolAksi}
-                        </div>`;
-                    listUserEl.appendChild(li);
-                }
-            });
-
-            if(listUserEl.innerHTML === "") {
-                listUserEl.innerHTML = "<li style='color:#94a3b8; text-align:center; font-size:0.85rem;'>Sepi... Belum ada pemain lain yang masuk.</li>";
-            }
-        });
-    }
-
-    // 3. LOGIKA AKSI: Kirim Tantangan Duel Online
-    function kirimTantangan(namaLawan) {
-        if (!usernameSaya) {
-            alert("Kamu harus klik 'Masuk Online' terlebih dahulu!");
-            return;
-        }
-        
-        const roomId = "room_" + usernameSaya + "_vs_" + namaLawan;
-        sessionStorage.setItem("catur_peran", "w"); // Penantang = Putih
-        sessionStorage.setItem("catur_room_id", roomId);
-
-        // Buat room di database
-        db.collection("room_catur").doc(roomId).set({
-            fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-            turn: "w",
-            waktuUpdate: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        // Ubah status target korban tantangan
-        db.collection("para_pemain").doc(namaLawan).update({
-            status: "ditantang",
-            lawan: usernameSaya,
-            roomId: roomId
-        });
-
-        // Ubah status kita sendiri
-        db.collection("para_pemain").doc(usernameSaya).update({
-            status: "bermain",
-            lawan: namaLawan,
-            roomId: roomId
-        });
-
-        alert("Tantangan terkirim! Sedang mengalihkanmu ke papan laga...");
-        window.location.href = "Sekak.html?mode=friend";
-    }
-
-    // 4. RADAR MASUK: Menerima Tantangan Masuk
-    function pantauTantanganMasuk() {
-        db.collection("para_pemain").doc(usernameSaya).onSnapshot((doc) => {
-            if (!doc.exists) return;
-            const data = doc.data();
-
-            if (data.status === "ditantang") {
-                const boxNotif = document.getElementById('notifikasi-tantangan');
-                boxNotif.innerHTML = `
-                    <div style="text-align:center; padding:5px;">
-                        <p style="margin:0 0 8px 0;">⚔️ <b>${data.lawan}</b> mengajakmu berduel!</p>
-                        <button onclick="terimaTantangan('${data.lawan}', '${data.roomId}')" style="background:#28a745; color:white; border:none; padding:5px 12px; border-radius:4px; cursor:pointer; font-weight:bold; margin-right:5px;">TERIMA</button>
-                        <button onclick="tolakTantangan('${data.lawan}')" style="background:#dc3545; color:white; border:none; padding:5px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">TOLAK</button>
-                    </div>
-                `;
-            } else {
-                document.getElementById('notifikasi-tantangan').innerText = "Belum ada tantangan masuk.";
-            }
-        });
-    }
-
-    // 5. PENERIMAAN / PENOLAKAN DUEL
-    function terimaTantangan(lawan, roomId) {
-        sessionStorage.setItem("catur_peran", "b"); // Penerima = Hitam
-        sessionStorage.setItem("catur_room_id", roomId);
-
-        db.collection("para_pemain").doc(usernameSaya).update({
-            status: "bermain"
-        });
-
-        window.location.href = "Sekak.html?mode=friend";
-    }
-
-    function tolakTantangan(lawan) {
-        db.collection("para_pemain").doc(usernameSaya).update({
-            status: "di_lobby",
-            lawan: "",
-            roomId: ""
-        });
-        db.collection("para_pemain").doc(lawan).update({
-            status: "di_lobby",
-            lawan: "",
-            roomId: ""
-        });
-    }
-
-    // 6. REDIRECT OFFLINE MODES
-    function pindahKeGame(mode) {
-        window.location.href = `Sekak.html?mode=${mode}`;
-    }
+        // 3. SEHARUSNYA OTOMATIS REDIRECT: Pindahkan pemain langsung ke arena game catur
+        // Kita arahkan default ke mode 'ai' (Singleplayer) atau halaman utama arena catur
+        window.location.href = "Sekak.html?mode=ai";
+    })
+    .catch((error) => {
+        console.error("Gagal mendaftarkan akun: ", error);
+        alert("Terjadi kesalahan jaringan database. Silakan coba lagi.");
+    });
+}
 </script>
 
 </body>
