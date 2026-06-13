@@ -343,6 +343,23 @@ function resetGame() {
     document.getElementById('gameover-overlay').style.display = 'none';
     document.getElementById('start-overlay').style.display = 'flex';
 
+    // Kembalikan posisi jam default (Hitam di atas, Putih di bawah) saat reset/lobby
+    const jamPutih = document.getElementById('timer-white');
+    const jamHitam = document.getElementById('timer-black');
+    const wadahAtas = document.getElementById('timer-wrapper-top');
+    const wadahBawah = document.getElementById('timer-wrapper-bottom');
+    
+    if(wadahAtas && wadahBawah && jamPutih && jamHitam) {
+        wadahAtas.appendChild(jamHitam);
+        wadahBawah.appendChild(jamPutih);
+    }
+    
+    // Kembalikan teks label semula
+    if(jamPutih && jamHitam) {
+        document.querySelector('#timer-white .timer-label').innerText = "⚪ PUTIH (KAMU)";
+        document.querySelector('#timer-black .timer-label').innerText = "⚫ HITAM";
+    }
+
     const mode = document.getElementById('gameMode').value;
     
     if (mode === 'puzzle') {
@@ -392,12 +409,19 @@ function resetGame() {
     statusEl.innerText = "Menu Terkunci. Klik START GAME untuk mulai.";
 }
 
-function mulaiPermainanNyata() {
+
+ function mulaiPermainanNyata() {
     document.getElementById('start-overlay').style.display = 'none';
     gameDimulai = true;
     
     const modeAktif = document.getElementById('gameMode').value;
     tukarArahJam(); 
+
+    // Ambil elemen jam dan bungkusannya
+    const jamPutih = document.getElementById('timer-white');
+    const jamHitam = document.getElementById('timer-black');
+    const wadahAtas = document.getElementById('timer-wrapper-top');
+    const wadahBawah = document.getElementById('timer-wrapper-bottom');
 
     if (modeAktif === 'friend') {
         if (!usernameSaya || !roomId) {
@@ -408,22 +432,66 @@ function mulaiPermainanNyata() {
         
         if (peranSaya === 'b' && board !== null) {
             board.orientation('black');
+            
+            // JIKA SAYA HITAM: Pindahkan Jam Hitam ke Bawah, Jam Putih ke Atas
+            if(wadahAtas && wadahBawah && jamPutih && jamHitam) {
+                wadahAtas.appendChild(jamPutih);
+                wadahBawah.appendChild(jamHitam);
+            }
+            
+            // Ubah teks penanda agar lebih jelas
+            document.querySelector('#timer-black .timer-label').innerText = "⚫ HITAM (KAMU)";
+            document.querySelector('#timer-white .timer-label').innerText = "⚪ PUTIH";
+        } else {
+            if (board) board.orientation('white');
+            
+            // JIKA SAYA PUTIH: Kembalikan Jam Putih ke Bawah, Jam Hitam ke Atas
+            if(wadahAtas && wadahBawah && jamPutih && jamHitam) {
+                wadahAtas.appendChild(jamHitam);
+                wadahBawah.appendChild(jamPutip);
+            }
+            
+            document.querySelector('#timer-white .timer-label').innerText = "⚪ PUTIH (KAMU)";
+            document.querySelector('#timer-black .timer-label').innerText = "⚫ HITAM";
         }
         statusEl.innerText = `🎮 Mode Online Aktif! Anda memegang pion: ${peranSaya === 'w' ? 'PUTIH' : 'HITAM'}`;
+
     } else if (modeAktif === 'puzzle') {
         statusEl.innerText = "🧩 Mode Puzzle: Habisi lawan dalam 5 langkah mati!";
     } else {
+        // MODE VS AI
         const warnaPilihan = document.getElementById('playerColor').value;
         if (warnaPilihan === 'black') {
             if (board) board.orientation('black');
+            
+            // Pindahkan Jam Hitam ke Bawah jika melatih bidak hitam vs AI
+            if(wadahAtas && wadahBawah && jamPutih && jamHitam) {
+                wadahAtas.appendChild(jamPutih);
+                wadahBawah.appendChild(jamHitam);
+            }
+            
+            document.querySelector('#timer-black .timer-label').innerText = "⚫ HITAM (KAMU)";
+            document.querySelector('#timer-white .timer-label').innerText = "⚪ AI (KOMPUTER)";
+            
             statusEl.innerText = "🤖 AI (Putih) sedang berpikir...";
             setTimeout(pemicuLangkahAI, 600);
         } else {
             if (board) board.orientation('white');
+            
+            // Kembalikan ke posisi normal jika memegang putih vs AI
+            if(wadahAtas && wadahBawah && jamPutih && jamHitam) {
+                wadahAtas.appendChild(jamHitam);
+                wadahBawah.appendChild(jamPutih);
+            }
+            
+            document.querySelector('#timer-white .timer-label').innerText = "⚪ PUTIH (KAMU)";
+            document.querySelector('#timer-black .timer-label').innerText = "⚫ AI (KOMPUTER)";
+            
             statusEl.innerText = "Giliran: Klik Bidak Putih (Kamu) untuk memulai!";
         }
     }
 }
+
 
 // --- FIREBASE ONLINE MULTIPLAYER ENGINE ---
 function kirimLangkahKeFirebase() {
