@@ -1,142 +1,129 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sekak jowo</title>
+    <title>Sekak Jowo</title>
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+    <link rel="stylesheet" href="CSS/Sekak.css">
     
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-     <link rel="stylesheet" href="CSS/Sekak.css">
      
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <link rel="manifest" href="manifest.json">
-
- 
 </head>
 <body>
 
 <div class="game-container">
-<div id="puzzle-counter-box" style="display: none; background: #b91c1c; color: white; padding: 6px; border-radius: 4px; margin-bottom: 10px; font-weight: bold; font-size: 0.9rem;">
-    ⚠️ SISA JATAH LANGKAH MU: <span id="sisa-langkah">5</span> KALI LAGI!
-</div>
+    <div id="puzzle-counter-box" style="display: none; background: #b91c1c; color: white; padding: 6px; border-radius: 4px; margin-bottom: 10px; font-weight: bold; font-size: 0.9rem; text-align: center;">
+        ⚠️ SISA JATAH LANGKAH MU: <span id="sisa-langkah">5</span> KALI LAGI!
+    </div>
 
-<div id="auth-section" style="padding: 15px; background: #222; color: #fff; margin-bottom: 10px; border-radius: 8px;">
-    <button onclick="kembaliKeHome()" class="btn-home">
-    🏠 Kembali ke Lobby
+    <div id="auth-section" style="padding: 15px; background: #222; color: #fff; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+       <button onclick="kembaliKeHome()" style="padding: 15px; background: #222; color: #fff;" class="btn-home-gaming">
+    <span class="btn-home-icon">🏠</span> 
+    <span class="btn-home-text">Kembali ke Lobby</span>
 </button>
 
-</div>
-<div id="box-user-profile" style="background: rgba(255,255,255,0.05); padding: 10px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; display: inline-block;">
-    <span id="info-pemain-aktif">⌛ Memuat profil pemain...</span>
-</div>
-<div id="notifikasi-tantangan"></div>
-
-<div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; margin-bottom: 10px;">
-    <span id="info-pemain-aktif">Memuat profile akun...</span>
-</div>
-
-<div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; margin-top: 15px;">
-    <h4 style="margin-top:0; color:#00f2fe; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom:5px;">👥 Pemain Lain di Lobby</h4>
-    <div id="daftar-pemain-online">
-        <p style="color:#aaa; font-size:13px; font-style:italic;">Mencari pemain...</p>
+        <span id="user-aktif-teks" style="font-weight: bold; color: #00f2fe;">Status: Memuat sesi...</span>
     </div>
-</div>
 
-<select id="gameMode" style="display:none;">
-    <option value="ai">Vs AI</option>
-    <option value="puzzle">Puzzle</option>
-    <option value="friend">Vs Teman</option>
-</select>
-<input type="hidden" id="timeLimit" value="300">
+    <div id="box-user-profile" style="background: rgba(255,255,255,0.05); padding: 10px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; display: block;">
+        <span id="info-pemain-aktif">⌛ Memuat profil pemain online...</span>
+    </div>
+    <div id="notifikasi-tantangan"></div>
 
-<select id="gameMode" style="display:none;">
-    <option value="ai">Vs AI</option>
-    <option value="puzzle">Puzzle</option>
-    <option value="friend">Vs Teman</option>
-</select>
-<input type="hidden" id="timeLimit" value="300">
-
+    <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; margin-top: 15px; margin-bottom: 15px;">
+        <h4 style="margin-top:0; color:#00f2fe; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom:5px;">👥 Pemain Lain di Lobby</h4>
+        <div id="daftar-pemain-online">
+            <p style="color:#aaa; font-size:13px; font-style:italic;">Mencari pemain...</p>
+        </div>
+    </div>
 
     <div class="menu-panel">
         <div class="menu-row">
-            <label>Mode Permainan:</label>
+            <label for="gameMode">Mode Permainan:</label>
             <select id="gameMode" onchange="resetGame()">
-                <option value="friend">Vs Teman</option>
-                <option value="ai" selected>VS COM</option>
-                 <option value="puzzle">Mode 5 Langkah Mati!</option>
+                <option value="ai" selected>VS COM (AI)</option>
+                <option value="friend">Vs Teman (Online)</option>
+                <option value="puzzle">Mode 5 Langkah Mati!</option>
             </select>
         </div>
+        
         <div class="menu-row" id="difficultyRow">
-            <label>Tingkat Kesulitan:</label>
+            <label for="aiLevel">Tingkat Kesulitan AI:</label>
             <select id="aiLevel">
                 <option value="0">Pemula</option>
-                <option value="3" selected>Semi</option>
-                <option value="10">Prestasi</option>
+                <option value="3" selected>Semi Pro</option>
+                <option value="10">Prestasi / Master</option>
             </select>
         </div>
+        
+        <div class="menu-row" id="playerColorRow">
+            <label for="playerColor">Pilih Warna Bidak:</label>
+            <select id="playerColor">
+                <option value="white">Main Putih</option>
+                <option value="black">Main Hitam</option>
+            </select>
+        </div>
+
         <div class="menu-row">
-            <label>Durasi Mikir:</label>
+            <label for="timeLimit">Durasi Berpikir:</label>
             <select id="timeLimit" onchange="resetGame()">
                 <option value="60">1 Menit</option>
                 <option value="180">3 Menit</option>
                 <option value="300" selected>5 Menit</option>
-                <option value="600">10 Menit</option>
             </select>
         </div>
     </div>
     
-      <div id="marquee-duel" class="marquee-container" style="display: none;">
-    <div class="marquee-text">
-        🔥 PERTARUNGAN HARGA DIRI! NO REMATCH! JIKA KALAH WAJIB PINDAH AGAMA! 🤜💥🤛 &nbsp;&nbsp;&nbsp;&nbsp;
-    </div>
-</div>
-    
-    <div id="timer-black" class="timer-container">
-        <span class="timer-label">⚫ HITAM</span>
-        <span id="clock-black">05:00</span>
-    </div>
-<div class="board-wrapper">
-    
-    <div id="board"></div>
-
-    <div id="start-overlay">
-        <div class="overlay-content">
-            <h1>READY?</h1>
-            <p>Atur mode di atas, lalu tekan tombol untuk bertanding.</p>
-            <button class="btn-start" onclick="mulaiPermainanNyata()">START GAME</button>
+    <div id="marquee-duel" class="marquee-container" style="display: none;">
+        <div class="marquee-text">
+            🔥 PERTARUNGAN HARGA DIRI! NO REMATCH! JIKA KALAH WAJIB BERBENAH! 🤜💥🤛 &nbsp;&nbsp;&nbsp;&nbsp;
         </div>
     </div>
     
-    <div id="gameover-overlay" style="display: none;">
-    <div class="gameover-content">
-        <div class="skakmat-animation">SKAKMAT!</div>
-        <div id="taunt-text" class="taunt-style">Aduh... Otakmu perlu diservis, jalan begitu saja tidak lihat! 🤫</div>
-        <button class="btn-rematch" onclick="resetGame()">MAIN LAGI (BALAS DENDAM)</button>
+    <div id="timer-black" class="timer-container" style="margin-top: 10px;">
+        <span class="timer-label">⚫ HITAM</span>
+        <span id="clock-black">05:00</span>
     </div>
-</div>
 
+    <div class="board-wrapper" style="position: relative; margin: 15px 0;">
+        <div id="board" style="width: 100%;"></div>
 
-</div>
-    <div id="board"></div>
+        <div id="start-overlay">
+            <div class="overlay-content">
+                <h1>READY?</h1>
+                <p>Atur mode di atas, lalu tekan tombol untuk bertanding.</p>
+                <button class="btn-start" onclick="mulaiPermainanNyata()">START GAME</button>
+            </div>
+        </div>
+        
+        <div id="gameover-overlay" style="display: none;">
+            <div class="gameover-content">
+                <div class="skakmat-animation">SKAKMAT!</div>
+                <div id="taunt-text" class="taunt-style">Aduh... Otakmu perlu diservis! 🤫</div>
+                <button class="btn-rematch" onclick="resetGame()">MAIN LAGI (BALAS DENDAM)</button>
+            </div>
+        </div>
+    </div>
     
     <div id="timer-white" class="timer-container">
         <span class="timer-label">⚪ PUTIH (KAMU)</span>
         <span id="clock-white">05:00</span>
     </div>
     
-    <div class="status-box">
+    <div class="status-box" style="margin-top: 15px; text-align: center;">
         <span id="status">Memuat game...</span>
     </div>
-    <button class="btn-reset" onclick="resetGame()">Mulai Ulang Game</button>
+    
+    <button class="btn-reset" onclick="resetGame()" style="margin-top: 10px; width: 100%;">Mulai Ulang Papan</button>
 </div>
 
-<script src="JS/stockfish.js"></script>
 <script src="JS/Sekak.js"></script>
 </body>
 </html>

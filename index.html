@@ -36,6 +36,19 @@ body {
     text-align: center;
     box-shadow: 0 20px 40px rgba(0,0,0,0.5);
 }
+
+.pesanAnak {
+    max-width: 500px;
+    margin: 80px auto;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+}
+
 h1 {
     font-size: 28px;
     margin-bottom: 5px;
@@ -93,7 +106,7 @@ input[type="text"]:focus {
     <input type="text" id="input-nama-pemain" placeholder="Masukkan Nama / Username Kamu..." autocomplete="off">
     <button class="btn-masuk" onclick="prosesLoginOtomatis()">MASUK KE PERMAINAN</button>
 </div>
-
+<marquee class="pesanAnak" > Pertarungan Harga diri, yang kalah Pindah AGAMA</marquee>
 <script>
 // =============================================================================
 // CONFIG FIREBASE (SINKRON DENGAN SEKAK.JS)
