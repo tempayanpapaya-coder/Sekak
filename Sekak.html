@@ -27,25 +27,40 @@
 </div>
 
 <div id="auth-section" style="padding: 15px; background: #222; color: #fff; margin-bottom: 10px; border-radius: 8px;">
-    <h3>🔑 Masuk Game Catur</h3>
-    <input type="text" id="username-input" placeholder="Masukkan Username Kamu..." style="padding: 8px; width: 200px;">
-    <button onclick="loginPemain()" style="padding: 8px 15px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 4px;">Masuk Online</button>
-    <p id="user-aktif-teks" style="color: #ff9f43; font-weight: bold; margin-top: 5px;"></p>
     <button onclick="kembaliKeHome()" class="btn-home">
     🏠 Kembali ke Lobby
 </button>
 
 </div>
-
-<div id="lobby-section" style="display: none; padding: 15px; background: #2c3e50; color: #fff; margin-bottom: 10px; border-radius: 8px;">
-    <h3>👥 Pemain Yang Sedang Online</h3>
-    <ul id="daftar-user-online" style="list-style: none; padding: 0;"></ul>
-    
-    <hr style="border: 0.5px solid #555; margin: 15px 0;">
-    
-    <h3>📩 Kotak Masuk Tantangan</h3>
-    <div id="notifikasi-tantangan">Tidak ada tantangan masuk saat ini.</div>
+<div id="box-user-profile" style="background: rgba(255,255,255,0.05); padding: 10px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; display: inline-block;">
+    <span id="info-pemain-aktif">⌛ Memuat profil pemain...</span>
 </div>
+<div id="notifikasi-tantangan"></div>
+
+<div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; margin-bottom: 10px;">
+    <span id="info-pemain-aktif">Memuat profile akun...</span>
+</div>
+
+<div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; margin-top: 15px;">
+    <h4 style="margin-top:0; color:#00f2fe; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom:5px;">👥 Pemain Lain di Lobby</h4>
+    <div id="daftar-pemain-online">
+        <p style="color:#aaa; font-size:13px; font-style:italic;">Mencari pemain...</p>
+    </div>
+</div>
+
+<select id="gameMode" style="display:none;">
+    <option value="ai">Vs AI</option>
+    <option value="puzzle">Puzzle</option>
+    <option value="friend">Vs Teman</option>
+</select>
+<input type="hidden" id="timeLimit" value="300">
+
+<select id="gameMode" style="display:none;">
+    <option value="ai">Vs AI</option>
+    <option value="puzzle">Puzzle</option>
+    <option value="friend">Vs Teman</option>
+</select>
+<input type="hidden" id="timeLimit" value="300">
 
 
     <div class="menu-panel">
