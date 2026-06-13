@@ -39,34 +39,6 @@ let aiEngine = null;
 const urlParams = new URLSearchParams(window.location.search);
 const modeDariUrl = urlParams.get('mode') || 'ai';
 
-// Inisialisasi Kejadian DOM Bersiap
-document.addEventListener("DOMContentLoaded", function() {
-    const gameModeSelect = document.getElementById('gameMode');
-    if (gameModeSelect) {
-        gameModeSelect.value = modeDariUrl;
-        // Panggil reset game agar menyesuaikan layout tampilan berdasarkan mode URL
-        resetGame();
-    }
-    
-    const userAktifTeks = document.getElementById('user-aktif-teks');
-    if (userAktifTeks && usernameSaya) {
-        userAktifTeks.innerText = "Status: Bermain sebagai " + usernameSaya;
-    }
-
-    const infoPemainAktif = document.getElementById('info-pemain-aktif');
-    if (infoPemainAktif) {
-        infoPemainAktif.innerText = usernameSaya ? `👤 Akun Anda: ${usernameSaya} (${peranSaya === 'w' ? 'Putih' : 'Hitam'})` : "👤 Mode Offline (Tamu)";
-    }
-
-    if (modeDariUrl === 'friend' && usernameSaya) {
-        window.addEventListener('beforeunload', function () {
-            db.collection("para_pemain").doc(usernameSaya).delete();
-        });
-        // Aktifkan sinkronisasi database multiplayer secara otomatis
-        aktifkanListenerOnline();
-    }
-});
-
 // --- INISIALISASI ENGINE STOCKFISH ---
 try {
     aiEngine = new Worker('JS/stockfish.js');
@@ -92,6 +64,43 @@ if (aiEngine) {
     };
 }
 
+// Inisialisasi Kejadian DOM Bersiap
+document.addEventListener("DOMContentLoaded", function() {
+    // Jalankan konfigurasi visual papan catur ChessboardJS terlebih dahulu
+    const config = {
+        draggable: false,
+        position: 'start',
+        pieceTheme: 'Aset/{piece}.png'
+    };
+    board = Chessboard('board', config);
+
+    // Ikat event klik petak ke DOM Board milik jQuery
+    $('#board').on('click', '.square-55d63', function() {
+        const square = $(this).attr('data-square');
+        onSquareClick(square);
+    });
+
+    const gameModeSelect = document.getElementById('gameMode');
+    if (gameModeSelect) {
+        gameModeSelect.value = modeDariUrl;
+        resetGame();
+    }
+    
+    const userAktifTeks = document.getElementById('user-aktif-teks');
+    if (userAktifTeks && usernameSaya) {
+        userAktifTeks.innerText = "Status: Bermain sebagai " + usernameSaya;
+    }
+
+    if (modeDariUrl === 'friend' && usernameSaya) {
+        window.addEventListener('beforeunload', function () {
+            db.collection("para_pemain").doc(usernameSaya).delete();
+        });
+    }
+
+    // Daftarkan ke sistem radar online multiplayer
+    daftarkanDiriKeLobby();
+});
+
 function kembaliKeHome() {
     if (usernameSaya) {
         db.collection("para_pemain").doc(usernameSaya).delete()
@@ -105,7 +114,7 @@ function kembaliKeHome() {
 // --- LOGIKA KLIK PETAK (Langkah Catur) ---
 function onSquareClick(square) {
     const modeGame = document.getElementById('gameMode').value;
-    const warnaPilihan = document.getElementById('playerColor').value; // Mengambil pilihan warna (white/black)
+    const warnaPilihan = document.getElementById('playerColor').value;
 
     // 1. SENSOR ONLINE: Kunci papan jika bukan giliran mu saat online multiplayer
     if (modeGame === 'friend' && game.turn() !== peranSaya) {
@@ -115,10 +124,7 @@ function onSquareClick(square) {
     
     // 2. SENSOR OFFLINE VS AI: Kunci papan jika sekarang giliran AI (Komputer) yang jalan
     if (modeGame === 'ai') {
-        // Jika pilih Main Putih, maka saat giliran hitam ('b') papan akan dikunci (karena itu giliran AI)
         if (warnaPilihan === 'white' && game.turn() === 'b') return;
-        
-        // Jika pilih Main Hitam, maka saat giliran putih ('w') papan akan dikunci (karena itu giliran AI)
         if (warnaPilihan === 'black' && game.turn() === 'w') return;
     }
 
@@ -185,7 +191,6 @@ function suksesMelangkah() {
     const modeGame = document.getElementById('gameMode').value;
     const warnaPilihan = document.getElementById('playerColor').value;
 
-    // Logika Penghitung Langkah Khusus Mode Puzzle
     if (modeGame === 'puzzle') {
         langkahPuzzleTerpakai++;
         let sisa = jatahLangkahPuzzle - langkahPuzzleTerpakai;
@@ -201,57 +206,17 @@ function suksesMelangkah() {
     tukarArahJam(); 
     updateStatus();
 
-    // SINKRONISASI KE FIREBASE (Jika Mode Multi-pemain Online)
     if (modeGame === 'friend') {
         kirimLangkahKeFirebase();
     }
 
-    // Memicu Balasan Mesin Komputer AI
     if (modeGame === 'ai' && !game.game_over()) {
-        // AI membalas jika giliran hitam DAN user memilih main sebagai Putih
-        // ATAU AI membalas jika giliran putih DAN user memilih main sebagai Hitam
         if ((game.turn() === 'b' && warnaPilihan === 'white') || (game.turn() === 'w' && warnaPilihan === 'black')) {
             statusEl.innerText = "🤖 AI sedang berpikir...";
             setTimeout(pemicuLangkahAI, 500); 
         }
     }
 }
-
-function mulaiPermainanNyata() {
-    document.getElementById('start-overlay').style.none = 'none'; // Sembunyikan overlay start
-    document.getElementById('start-overlay').style.display = 'none';
-    gameDimulai = true;
-    
-    const modeAktif = document.getElementById('gameMode').value;
-    tukarArahJam(); 
-
-    if (modeAktif === 'friend') {
-        if (!usernameSaya || !roomId) {
-            alert("Data sesi online tidak ditemukan! Silakan masuk via halaman utama.");
-            window.location.href = "index.html";
-            return;
-        }
-        
-        if (peranSaya === 'b' && board !== null) {
-            board.orientation('black');
-        }
-        statusEl.innerText = `🎮 Mode Online Aktif! Anda memegang pion: ${peranSaya === 'w' ? 'PUTIH' : 'HITAM'}`;
-    } else if (modeAktif === 'puzzle') {
-        statusEl.innerText = "🧩 Mode Puzzle: Habisi lawan dalam 5 langkah mati!";
-    } else {
-        // Mode VS AI
-        const warnaPilihan = document.getElementById('playerColor').value;
-        if (warnaPilihan === 'black') {
-            board.orientation('black'); // Balik papan agar hitam di bawah
-            statusEl.innerText = "🤖 AI (Putih) sedang berpikir untuk langkah pertama...";
-            setTimeout(pemicuLangkahAI, 600); // Paksa AI jalan duluan sebagai Putih
-        } else {
-            board.orientation('white');
-            statusEl.innerText = "Giliran: Klik Bidak Putih (Kamu) untuk memulai!";
-        }
-    }
-}
-
 
 function pemicuLangkahAI() {
     if (!aiEngine) return;
@@ -324,15 +289,15 @@ function updateStatus() {
         
         if (mode === 'ai') {
             if (turnSekarang === 'w') {
-                kalimatEjekan = "AI berkata: 'Waduh... Otakmu perlu diservis, jalan begitu saja tidak lihat! 🤫'";
+                kalimatEjekan = "AI berkata: 'Waduh... Otakmu perlu diservis! 🤫'";
             } else {
-                kalimatEjekan = "🎉 LUAR BIASA! Kamu berhasil merontokkan sekrup prosesor robot AI ini! 🧠💥";
+                kalimatEjekan = "🎉 LUAR BIASA! Kamu berhasil mengalahkan komuter AI ini! 🧠💥";
             }
         } else {
             if (turnSekarang === 'w') {
-                kalimatEjekan = "⚫ PEMAIN HITAM MENANG! <br> Putih mending pulang aja, bersihin papan tulis sana! 🤫";
+                kalimatEjekan = "⚫ PEMAIN HITAM MENANG! 🤫";
             } else {
-                kalimatEjekan = "⚪ PEMAIN PUTIH MENANG! <br> Hitam, blundermu epic sekali! Harga dirimu jatuh di petak catur ini! 📉";
+                kalimatEjekan = "⚪ PEMAIN PUTIH MENANG! 📉";
             }
         }
 
@@ -377,12 +342,15 @@ function resetGame() {
         const posisiFenAcak = bankPosisiPuzzle[indeksAcak];
         
         game.load(posisiFenAcak); 
-        board.position(posisiFenAcak); 
+        if (board) board.position(posisiFenAcak); 
     } else {
         modePuzzleAktif = false;
         document.getElementById('puzzle-counter-box').style.display = 'none'; 
         game.reset();
-        board.start();
+        if (board) {
+            board.start();
+            board.orientation('white');
+        }
 
         if (mode === 'ai') {
             document.getElementById('difficultyRow').style.display = 'flex';
@@ -430,32 +398,17 @@ function mulaiPermainanNyata() {
     } else {
         const warnaPilihan = document.getElementById('playerColor').value;
         if (warnaPilihan === 'black') {
-            board.orientation('black');
-            statusEl.innerText = "Giliran: Komputer (Putih) jalan duluan...";
+            if (board) board.orientation('black');
+            statusEl.innerText = "🤖 AI (Putih) sedang berpikir...";
             setTimeout(pemicuLangkahAI, 600);
         } else {
-            board.orientation('white');
+            if (board) board.orientation('white');
             statusEl.innerText = "Giliran: Klik Bidak Putih (Kamu) untuk memulai!";
         }
     }
 }
 
-// --- KONFIGURASI VISUAL CHESSBOARDJS ---
-const config = {
-    draggable: false,
-    position: 'start',
-    pieceTheme: 'Aset/{piece}.png'
-};
-
-board = Chessboard('board', config);
-
-// Ikat event klik petak ke DOM Board milik jQuery
-$('#board').on('click', '.square-55d63', function() {
-    const square = $(this).attr('data-square');
-    onSquareClick(square);
-});
-
-// --- SISTEM FIREBASE ONLINE MULTIPLAYER ---
+// --- FIREBASE ONLINE MULTIPLAYER ENGINE ---
 function kirimLangkahKeFirebase() {
     if (!roomId) return;
     db.collection("room_catur").doc(roomId).set({
@@ -476,7 +429,7 @@ function aktifkanListenerOnline() {
             const data = doc.data();
             if (data.fen !== game.fen()) {
                 game.load(data.fen);  
-                board.position(data.fen);    
+                if (board) board.position(data.fen);    
                 tukarArahJam();
                 updateStatus();
                 
@@ -487,5 +440,150 @@ function aktifkanListenerOnline() {
     });
 }
 
-// Jalankan sistem reset pertama kali saat halaman dibuka
-resetGame();
+// --- SISTEM RADAR LOBBY & PROFIL REATIME ---
+function daftarkanDiriKeLobby() {
+    if (!usernameSaya) {
+        usernameSaya = "Pemain_" + Math.floor(1000 + Math.random() * 9000);
+        sessionStorage.setItem("catur_username", usernameSaya);
+    }
+
+    const modeAktif = document.getElementById('gameMode').value;
+    const infoProfil = document.getElementById('info-pemain-aktif');
+    if (infoProfil) {
+        infoProfil.innerHTML = `👤 Akun: <b>${usernameSaya}</b> <span style="color:#39ff14; font-size:11px;">● ONLINE</span>`;
+    }
+
+    if (modeAktif === 'friend') {
+        db.collection("para_pemain").doc(usernameSaya).set({
+            nama: usernameSaya,
+            status: "tersedia",
+            lawan: "",
+            roomId: "",
+            waktuAktif: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        pantauPemainLainLobby();
+        dengarkanTantanganMasuk();
+    }
+}
+
+function pantauPemainLainLobby() {
+    db.collection("para_pemain").onSnapshot((snapshot) => {
+        const areaDaftar = document.getElementById('daftar-pemain-online');
+        if (!areaDaftar) return;
+
+        areaDaftar.innerHTML = ""; 
+        let adaPemainLain = false;
+
+        snapshot.forEach((doc) => {
+            const dataPemain = doc.data();
+            if (dataPemain.nama !== usernameSaya) {
+                adaPemainLain = true;
+                
+                const itemPemain = document.createElement('div');
+                itemPemain.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:#1f222f; padding:8px 12px; margin-bottom:8px; border-radius:6px; border:1px solid #2d3246;";
+                
+                let tombolAksi = "";
+                if (dataPemain.status === "tersedia") {
+                    tombolAksi = `<button onclick="kirimTantangan('${dataPemain.nama}')" style="background:#00b894; color:white; border:none; padding:4px 10px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:12px;">⚔️ TANTANG</button>`;
+                } else {
+                    tombolAksi = `<span style="color:#aaa; font-size:12px; font-style:italic;">🚫 ${dataPemain.status.toUpperCase()}</span>`;
+                }
+
+                itemPemain.innerHTML = `<span style="font-weight:bold; color:#fff;">🎮 ${dataPemain.nama}</span>${tombolAksi}`;
+                areaDaftar.appendChild(itemPemain);
+            }
+        });
+
+        if (!adaPemainLain) {
+            areaDaftar.innerHTML = `<p style="color:#aaa; font-size:13px; font-style:italic; text-align:center;">📭 Lobby sepi, belum ada pemain lain...</p>`;
+        }
+    });
+}
+
+function dengarkanTantanganMasuk() {
+    db.collection("para_pemain").doc(usernameSaya)
+    .onSnapshot((doc) => {
+        if (doc.exists) {
+            const dataSaya = doc.data();
+            const areaNotif = document.getElementById('notifikasi-tantangan');
+            
+            if (dataSaya.status === "ditantang" && dataSaya.lawan && dataSaya.roomId) {
+                if (areaNotif) {
+                    areaNotif.innerHTML = `
+                        <div style="background:#2d1515; border:2px solid #ef4444; padding:15px; border-radius:8px; text-align:center; margin-bottom:15px;">
+                            <h4 style="margin:0 0 5px 0; color:#ef4444;">⚔️ TANTANGAN MASUK!</h4>
+                            <p style="margin:0 0 12px 0; font-size:14px;">Kamu ditantang duel oleh <b>${dataSaya.lawan}</b>!</p>
+                            <button onclick="terimaTantangan('${dataSaya.lawan}', '${dataSaya.roomId}')" style="background:#39ff14; color:#000; border:none; padding:8px 16px; font-weight:bold; border-radius:4px; cursor:pointer; margin-right:10px;">TERIMA (GAS)</button>
+                            <button onclick="tolakTantangan('${dataSaya.lawan}')" style="background:#ef4444; color:#fff; border:none; padding:8px 16px; font-weight:bold; border-radius:4px; cursor:pointer;">TOLAK</button>
+                        </div>
+                    `;
+                }
+            } else {
+                if (areaNotif) areaNotif.innerHTML = "";
+            }
+        }
+    });
+}
+
+function kirimTantangan(namaLawan) {
+    roomId = "room_" + usernameSaya + "_vs_" + namaLawan;
+    peranSaya = "w"; 
+    sessionStorage.setItem("catur_room_id", roomId);
+    sessionStorage.setItem("catur_peran", peranSaya);
+
+    db.collection("room_catur").doc(roomId).set({
+        fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        turn: "w",
+        waktuUpdate: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    db.collection("para_pemain").doc(namaLawan).update({
+        status: "ditantang",
+        lawan: usernameSaya,
+        roomId: roomId
+    });
+
+    db.collection("para_pemain").doc(usernameSaya).update({
+        status: "bermain",
+        lawan: namaLawan,
+        roomId: roomId
+    });
+
+    alert("Tantangan terkirim! Menunggu konfirmasi lawan...");
+    aktifkanListenerOnline();
+    mulaiPermainanNyata();
+}
+
+function terimaTantangan(namaLawan, idKamar) {
+    roomId = idKamar;
+    peranSaya = "b"; 
+    
+    sessionStorage.setItem("catur_room_id", roomId);
+    sessionStorage.setItem("catur_peran", peranSaya);
+
+    db.collection("para_pemain").doc(usernameSaya).update({
+        status: "bermain"
+    });
+
+    alert("Tantangan diterima! Anda memegang bidak HITAM.");
+    
+    const areaNotif = document.getElementById('notifikasi-tantangan');
+    if (areaNotif) areaNotif.innerHTML = "";
+    
+    aktifkanListenerOnline();
+    mulaiPermainanNyata();
+}
+
+function tolakTantangan(namaLawan) {
+    db.collection("para_pemain").doc(namaLawan).update({
+        status: "tersedia",
+        lawan: "",
+        roomId: ""
+    });
+    db.collection("para_pemain").doc(usernameSaya).update({
+        status: "tersedia",
+        lawan: "",
+        roomId: ""
+    });
+}
