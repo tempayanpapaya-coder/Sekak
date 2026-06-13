@@ -10,7 +10,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// --- VARIABEL GLOBAL UTOMATIS MEMBACA SESSION ---
+// --- VARIABEL GLOBAL OTOMATIS MEMBACA SESSION ---
 let usernameSaya = sessionStorage.getItem("catur_username") || "";
 let roomId = sessionStorage.getItem("catur_room_id") || "";
 let peranSaya = sessionStorage.getItem("catur_peran") || "w"; // 'w' untuk putih, 'b' untuk hitam
@@ -203,6 +203,7 @@ function suksesMelangkah() {
         }
     }
 
+    // PENTING: Jalankan tukarArahJam terlebih dahulu untuk mereset waktu sebelum update status
     tukarArahJam(); 
     updateStatus();
 
@@ -218,6 +219,7 @@ function suksesMelangkah() {
     }
 }
 
+
 function pemicuLangkahAI() {
     if (!aiEngine) return;
     aiEngine.postMessage('position fen ' + game.fen());
@@ -225,18 +227,32 @@ function pemicuLangkahAI() {
 }
 
 // --- SISTEM DURASI JAM ---
+// --- SISTEM DURASI JAM (RESET SETIAP GANTI GILIRAN) ---
 function tukarArahJam() {
     clearInterval(intervalJam);
     if (game.game_over()) return;
 
+    // Ambil batas durasi awal yang dipilih dari dropdown secara dinamis
+    const durasiPilihan = parseInt(document.getElementById('timeLimit').value);
+
+    // RESET WAKTU: Kembalikan waktu pemain yang BARU SAJA SELESAI melangkah ke durasi awal
     if (game.turn() === 'w') {
+        // Jika sekarang giliran Putih ('w'), berarti Hitam baru saja selesai melangkah. Reset waktu Hitam!
+        waktuHitam = durasiPilihan;
+        formatTampilanJam('clock-black', waktuHitam);
+
         document.getElementById('timer-white').classList.add('active-timer');
         document.getElementById('timer-black').classList.remove('active-timer');
     } else {
+        // Jika sekarang giliran Hitam ('b'), berarti Putih baru saja selesai melangkah. Reset waktu Putih!
+        waktuPutih = durasiPilihan;
+        formatTampilanJam('clock-white', waktuPutih);
+
         document.getElementById('timer-black').classList.add('active-timer');
         document.getElementById('timer-white').classList.remove('active-timer');
     }
 
+    // Jalankan hitung mundur untuk pemain yang sekarang mendapat giliran
     intervalJam = setInterval(function() {
         if (game.turn() === 'w') {
             waktuPutih--;
@@ -268,6 +284,7 @@ function pemicuKalahWaktu(siapaYangHabis) {
     statusEl.innerHTML = `⏰ <b>GAME OVER!</b> Waktu Berpikir ${siapaYangHabis} Habis. Pemain <b>${pemenang} MENANG!</b>`;
 }
 
+// --- VISUAL HIGHLIGHT ---
 function highlightSquare(square) {
     $('#board .square-' + square).css('background', 'rgba(255, 159, 67, 0.5)');
 }
@@ -291,7 +308,7 @@ function updateStatus() {
             if (turnSekarang === 'w') {
                 kalimatEjekan = "AI berkata: 'Waduh... Otakmu perlu diservis! 🤫'";
             } else {
-                kalimatEjekan = "🎉 LUAR BIASA! Kamu berhasil mengalahkan komuter AI ini! 🧠💥";
+                kalimatEjekan = "🎉 LUAR BIASA! Kamu berhasil mengalahkan komputer AI ini! 🧠💥";
             }
         } else {
             if (turnSekarang === 'w') {
@@ -411,15 +428,21 @@ function mulaiPermainanNyata() {
 // --- FIREBASE ONLINE MULTIPLAYER ENGINE ---
 function kirimLangkahKeFirebase() {
     if (!roomId) return;
+    const durasiPilihan = parseInt(document.getElementById('timeLimit').value);
+
     db.collection("room_catur").doc(roomId).set({
         fen: game.fen(),
         turn: game.turn(),
+        waktuPutih: waktuPutih, // Kirim sisa waktu saat ini
+        waktuHitam: waktuHitam, // Kirim sisa waktu saat ini
         waktuUpdate: firebase.firestore.FieldValue.serverTimestamp()
     })
     .catch((error) => {
         console.error("Gagal mengirim langkah: ", error);
     });
 }
+
+
 
 function aktifkanListenerOnline() {
     if (!roomId) return;
@@ -430,6 +453,11 @@ function aktifkanListenerOnline() {
             if (data.fen !== game.fen()) {
                 game.load(data.fen);  
                 if (board) board.position(data.fen);    
+                
+                // Samakan data waktu dengan yang dikirim dari HP lawan
+                if (data.waktuPutih !== undefined) waktuPutih = data.waktuPutih;
+                if (data.waktuHitam !== undefined) waktuHitam = data.waktuHitam;
+                
                 tukarArahJam();
                 updateStatus();
                 
@@ -440,7 +468,7 @@ function aktifkanListenerOnline() {
     });
 }
 
-// --- SISTEM RADAR LOBBY & PROFIL REATIME ---
+// --- ADJUSTED SISTEM RADAR LOBBY (MENYESUAIKAN DATABASE SAYA) ---
 function daftarkanDiriKeLobby() {
     if (!usernameSaya) {
         usernameSaya = "Pemain_" + Math.floor(1000 + Math.random() * 9000);
@@ -454,12 +482,13 @@ function daftarkanDiriKeLobby() {
     }
 
     if (modeAktif === 'friend') {
+        // MENYESUAIKAN FIELD: status "di_lobby" & waktuLogin sesuai data Firebase Anda
         db.collection("para_pemain").doc(usernameSaya).set({
             nama: usernameSaya,
-            status: "tersedia",
+            status: "di_lobby",
             lawan: "",
             roomId: "",
-            waktuAktif: firebase.firestore.FieldValue.serverTimestamp()
+            waktuLogin: firebase.firestore.FieldValue.serverTimestamp()
         });
         
         pantauPemainLainLobby();
@@ -468,6 +497,7 @@ function daftarkanDiriKeLobby() {
 }
 
 function pantauPemainLainLobby() {
+    // Membaca koleksi "para_pemain" secara Realtime
     db.collection("para_pemain").onSnapshot((snapshot) => {
         const areaDaftar = document.getElementById('daftar-pemain-online');
         if (!areaDaftar) return;
@@ -477,6 +507,8 @@ function pantauPemainLainLobby() {
 
         snapshot.forEach((doc) => {
             const dataPemain = doc.data();
+            
+            // Tampilkan user lain yang statusnya "di_lobby"
             if (dataPemain.nama !== usernameSaya) {
                 adaPemainLain = true;
                 
@@ -484,10 +516,10 @@ function pantauPemainLainLobby() {
                 itemPemain.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:#1f222f; padding:8px 12px; margin-bottom:8px; border-radius:6px; border:1px solid #2d3246;";
                 
                 let tombolAksi = "";
-                if (dataPemain.status === "tersedia") {
+                if (dataPemain.status === "di_lobby") {
                     tombolAksi = `<button onclick="kirimTantangan('${dataPemain.nama}')" style="background:#00b894; color:white; border:none; padding:4px 10px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:12px;">⚔️ TANTANG</button>`;
                 } else {
-                    tombolAksi = `<span style="color:#aaa; font-size:12px; font-style:italic;">🚫 ${dataPemain.status.toUpperCase()}</span>`;
+                    tombolAksi = `<span style="color:#aaa; font-size:12px; font-style:italic;">🚫 BERMAIN</span>`;
                 }
 
                 itemPemain.innerHTML = `<span style="font-weight:bold; color:#fff;">🎮 ${dataPemain.nama}</span>${tombolAksi}`;
@@ -577,12 +609,12 @@ function terimaTantangan(namaLawan, idKamar) {
 
 function tolakTantangan(namaLawan) {
     db.collection("para_pemain").doc(namaLawan).update({
-        status: "tersedia",
+        status: "di_lobby",
         lawan: "",
         roomId: ""
     });
     db.collection("para_pemain").doc(usernameSaya).update({
-        status: "tersedia",
+        status: "di_lobby",
         lawan: "",
         roomId: ""
     });
