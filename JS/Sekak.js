@@ -529,18 +529,24 @@ function aktifkanListenerOnline() {
 
 // --- ADJUSTED SISTEM RADAR LOBBY ---
 function daftarkanDiriKeLobby() {
-    if (!usernameSaya) {
+    // 1. Pastikan usernameSaya benar-benar ada di sessionStorage
+    usernameSaya = sessionStorage.getItem("catur_username");
+    
+    if (!usernameSaya || usernameSaya === "") {
         usernameSaya = "Pemain_" + Math.floor(1000 + Math.random() * 9000);
         sessionStorage.setItem("catur_username", usernameSaya);
     }
 
-    const modeAktif = document.getElementById('gameMode').value;
+    // Tampilkan nama di profil halaman
     const infoProfil = document.getElementById('info-pemain-aktif');
     if (infoProfil) {
         infoProfil.innerHTML = `👤 Akun: <b>${usernameSaya}</b> <span style="color:#39ff14; font-size:11px;">● ONLINE</span>`;
     }
 
-    // DIPERBAIKI: Tetap daftarkan diri ke lobby/pantau jika mode di URL atau select adalah 'friend'
+    const gameModeSelect = document.getElementById('gameMode');
+    const modeAktif = gameModeSelect ? gameModeSelect.value : modeDariUrl;
+
+    // 2. Jika masuk ke mode friend, daftarkan ke Firestore dan AKTIFKAN RADAR LOBBY
     if (modeAktif === 'friend' || modeDariUrl === 'friend') {
         db.collection("para_pemain").doc(usernameSaya).set({
             nama: usernameSaya,
@@ -548,19 +554,30 @@ function daftarkanDiriKeLobby() {
             lawan: "",
             roomId: "",
             waktuLogin: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(() => {
-            console.log("Berhasil daftar online lobby.");
+        })
+        .then(() => {
+            console.log("Berhasil daftar ke Firestore dengan nama: " + usernameSaya);
+        })
+        .catch((error) => {
+            console.error("Gagal daftar ke lobby Firestore: ", error);
         });
         
+        // Jalankan pemantau musuh & tantangan
         pantauPemainLainLobby();
         dengarkanTantanganMasuk();
     }
 }
 
+
 function pantauPemainLainLobby() {
+    console.log("Radar dinyalakan... Mencari pemain lain selain: " + usernameSaya);
+
     db.collection("para_pemain").onSnapshot((snapshot) => {
         const areaDaftar = document.getElementById('daftar-pemain-online');
-        if (!areaDaftar) return;
+        if (!areaDaftar) {
+            console.error("Elemen HTML #daftar-pemain-online tidak ditemukan!");
+            return;
+        }
 
         areaDaftar.innerHTML = ""; 
         let adaPemainLain = false;
@@ -568,7 +585,8 @@ function pantauPemainLainLobby() {
         snapshot.forEach((doc) => {
             const dataPemain = doc.data();
             
-            if (dataPemain.nama !== usernameSaya) {
+            // Logika pemfilteran: Jangan tampilkan diri sendiri di daftar tantangan
+            if (dataPemain.nama && dataPemain.nama !== usernameSaya) {
                 adaPemainLain = true;
                 
                 const itemPemain = document.createElement('div');
@@ -587,10 +605,13 @@ function pantauPemainLainLobby() {
         });
 
         if (!adaPemainLain) {
-            areaDaftar.innerHTML = `<p style="color:#aaa; font-size:13px; font-style:italic; text-align:center;">📭 Lobby sepi, belum ada pemain lain...</p>`;
+            areaDaftar.innerHTML = `<p style="color:#aaa; font-size:13px; font-style:italic; text-align:center;">📭 Lobby sepi, tidak ada pemain lain yang online...</p>`;
         }
+    }, (error) => {
+        console.error("Error saat mendengarkan snapshot lobby: ", error);
     });
 }
+
 
 function dengarkanTantanganMasuk() {
     db.collection("para_pemain").doc(usernameSaya)
