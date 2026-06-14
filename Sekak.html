@@ -37,21 +37,21 @@
     </div>
     <div id="notifikasi-tantangan"></div>
 
-    <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; margin-top: 15px; margin-bottom: 15px;">
-        <h4 style="margin-top:0; color:#00f2fe; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom:5px;">👥 Pemain Lain di Lobby</h4>
-        <div id="daftar-pemain-online">
-            <p style="color:#aaa; font-size:13px; font-style:italic;">Mencari pemain...</p>
-        </div>
+ 
+<div class="lobby-online" style="margin-top: 20px; background: #151722; padding: 15px; border-radius: 8px;">
+    <h3 style="color: #39ff14; margin-top: 0; font-size: 16px; border-bottom: 1px solid #2d3246; padding-bottom: 8px;">
+        🟢 PEMAIN ONLINE DI LOBBY
+    </h3>
+    <div id="daftar-pemain-online">
+        <p style="color: #aaa; font-size: 13px; font-style: italic; text-align: center;">Menghubungkan ke lobby...</p>
     </div>
+</div>
+
 
     <div class="menu-panel">
         <div class="menu-row">
             <label for="gameMode">Mode Permainan:</label>
-            <select id="gameMode" onchange="resetGame()">
-                <option value="ai" selected>VS COM (AI)</option>
-                <option value="friend">Vs Teman (Online)</option>
-                <option value="puzzle">Mode 5 Langkah Mati!</option>
-            </select>
+          
         </div>
         
         <div class="menu-row" id="difficultyRow">
@@ -87,6 +87,26 @@
         </div>
     </div>
     
+    
+    
+    <div class="kontrol-game" style="margin-bottom: 15px; background: #151722; padding: 10px; border-radius: 8px;">
+    <div id="info-pemain-aktif" style="color: #fff; margin-bottom: 8px; font-size: 14px;">
+        👤 Memuat profil...
+    </div>
+    
+    <label style="color: #aaa; font-size: 13px;">Mode Permainan: </label>
+    <select id="gameMode" style="background: #222533; color: #fff; padding: 5px; border-radius: 4px; border: 1px solid #444;">
+        <option value="ai">🆚 Komputer (AI)</option>
+        <option value="friend">🌐 Main Bareng Teman (Online)</option>
+        <option value="puzzle">🧩 Mode Puzzle</option>
+    </select>
+
+    <select id="timeLimit" style="display:none;"><option value="300">5 Menit</option></select>
+    <select id="playerColor" style="display:none;"><option value="white">Putih</option></select>
+</div>
+
+<div id="notifikasi-tantangan"></div>
+
 <div id="timer-wrapper-top">
     <div id="timer-black" class="timer-container">
         <span class="timer-label">⚫ HITAM</span>
@@ -122,9 +142,8 @@
 </div>
 
     
-    <div class="status-box" style="margin-top: 15px; text-align: center;">
-        <span id="status">Memuat game...</span>
-    </div>
+    
+    
     
     <button class="btn-reset" onclick="resetGame()" style="margin-top: 10px; width: 100%;">Mulai Ulang Papan</button>
 </div>
