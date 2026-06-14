@@ -83,6 +83,13 @@ document.addEventListener("DOMContentLoaded", function() {
     const gameModeSelect = document.getElementById('gameMode');
     if (gameModeSelect) {
         gameModeSelect.value = modeDariUrl;
+        
+        // Listener jika user mengubah mode permainan lewat dropdown di dalam game
+        gameModeSelect.addEventListener('change', function() {
+            resetGame();
+            daftarkanDiriKeLobby(); // Re-register saat mode berubah ke 'friend'
+        });
+        
         resetGame();
     }
     
@@ -219,7 +226,6 @@ function suksesMelangkah() {
     }
 }
 
-
 function pemicuLangkahAI() {
     if (!aiEngine) return;
     aiEngine.postMessage('position fen ' + game.fen());
@@ -227,40 +233,29 @@ function pemicuLangkahAI() {
 }
 
 // --- SISTEM DURASI JAM ---
-// --- SISTEM DURASI JAM (RESET SETIAP GANTI GILIRAN) ---
 function tukarArahJam() {
     clearInterval(intervalJam);
     if (game.game_over()) return;
 
-    // Ambil batas durasi awal yang dipilih dari dropdown secara dinamis
-    const durasiPilihan = parseInt(document.getElementById('timeLimit').value);
-
-    // RESET WAKTU: Kembalikan waktu pemain yang BARU SAJA SELESAI melangkah ke durasi awal
-    if (game.turn() === 'w') {
-        // Jika sekarang giliran Putih ('w'), berarti Hitam baru saja selesai melangkah. Reset waktu Hitam!
-        waktuHitam = durasiPilihan;
-        formatTampilanJam('clock-black', waktuHitam);
-
-        document.getElementById('timer-white').classList.add('active-timer');
-        document.getElementById('timer-black').classList.remove('active-timer');
-    } else {
-        // Jika sekarang giliran Hitam ('b'), berarti Putih baru saja selesai melangkah. Reset waktu Putih!
-        waktuPutih = durasiPilihan;
-        formatTampilanJam('clock-white', waktuPutih);
-
-        document.getElementById('timer-black').classList.add('active-timer');
-        document.getElementById('timer-white').classList.remove('active-timer');
-    }
-
-    // Jalankan hitung mundur untuk pemain yang sekarang mendapat giliran
+    // Jalankan hitung mundur berdasarkan giliran bidak di papan FEN (game.turn())
     intervalJam = setInterval(function() {
         if (game.turn() === 'w') {
+            // Giliran Putih melangkah
             waktuPutih--;
             formatTampilanJam('clock-white', waktuPutih);
+            
+            document.getElementById('timer-white').classList.add('active-timer');
+            document.getElementById('timer-black').classList.remove('active-timer');
+            
             if (waktuPutih <= 0) pemicuKalahWaktu('Putih');
         } else {
+            // Giliran Hitam melangkah
             waktuHitam--;
             formatTampilanJam('clock-black', waktuHitam);
+            
+            document.getElementById('timer-black').classList.add('active-timer');
+            document.getElementById('timer-white').classList.remove('active-timer');
+            
             if (waktuHitam <= 0) pemicuKalahWaktu('Hitam');
         }
     }, 1000);
@@ -343,7 +338,6 @@ function resetGame() {
     document.getElementById('gameover-overlay').style.display = 'none';
     document.getElementById('start-overlay').style.display = 'flex';
 
-    // Kembalikan posisi jam default (Hitam di atas, Putih di bawah) saat reset/lobby
     const jamPutih = document.getElementById('timer-white');
     const jamHitam = document.getElementById('timer-black');
     const wadahAtas = document.getElementById('timer-wrapper-top');
@@ -354,7 +348,6 @@ function resetGame() {
         wadahBawah.appendChild(jamPutih);
     }
     
-    // Kembalikan teks label semula
     if(jamPutih && jamHitam) {
         document.querySelector('#timer-white .timer-label').innerText = "⚪ PUTIH (KAMU)";
         document.querySelector('#timer-black .timer-label').innerText = "⚫ HITAM";
@@ -397,7 +390,7 @@ function resetGame() {
         }
     }
 
-    const durasiPilihan = parseInt(document.getElementById('timeLimit').value);
+    const durasiPilihan = parseInt(document.getElementById('timeLimit').value) || 300;
     waktuPutih = durasiPilihan;
     waktuHitam = durasiPilihan;
 
@@ -410,14 +403,12 @@ function resetGame() {
 }
 
 
- function mulaiPermainanNyata() {
+function mulaiPermainanNyata() {
     document.getElementById('start-overlay').style.display = 'none';
     gameDimulai = true;
     
     const modeAktif = document.getElementById('gameMode').value;
-    tukarArahJam(); 
 
-    // Ambil elemen jam dan bungkusannya
     const jamPutih = document.getElementById('timer-white');
     const jamHitam = document.getElementById('timer-black');
     const wadahAtas = document.getElementById('timer-wrapper-top');
@@ -433,22 +424,21 @@ function resetGame() {
         if (peranSaya === 'b' && board !== null) {
             board.orientation('black');
             
-            // JIKA SAYA HITAM: Pindahkan Jam Hitam ke Bawah, Jam Putih ke Atas
+            // SAYA HITAM: Pindahkan kontainer jam Hitam ke bawah, jam Putih ke atas
             if(wadahAtas && wadahBawah && jamPutih && jamHitam) {
                 wadahAtas.appendChild(jamPutih);
                 wadahBawah.appendChild(jamHitam);
             }
             
-            // Ubah teks penanda agar lebih jelas
             document.querySelector('#timer-black .timer-label').innerText = "⚫ HITAM (KAMU)";
             document.querySelector('#timer-white .timer-label').innerText = "⚪ PUTIH";
         } else {
             if (board) board.orientation('white');
             
-            // JIKA SAYA PUTIH: Kembalikan Jam Putih ke Bawah, Jam Hitam ke Atas
+            // SAYA PUTIH: Jam Putih di bawah, jam Hitam di atas
             if(wadahAtas && wadahBawah && jamPutih && jamHitam) {
                 wadahAtas.appendChild(jamHitam);
-                wadahBawah.appendChild(jamPutip);
+                wadahBawah.appendChild(jamPutih);
             }
             
             document.querySelector('#timer-white .timer-label').innerText = "⚪ PUTIH (KAMU)";
@@ -464,7 +454,7 @@ function resetGame() {
         if (warnaPilihan === 'black') {
             if (board) board.orientation('black');
             
-            // Pindahkan Jam Hitam ke Bawah jika melatih bidak hitam vs AI
+            // VS AI SEBAGAI HITAM: Pindahkan jam Hitam ke bawah (Klien), jam AI (Putih) ke atas
             if(wadahAtas && wadahBawah && jamPutih && jamHitam) {
                 wadahAtas.appendChild(jamPutih);
                 wadahBawah.appendChild(jamHitam);
@@ -474,11 +464,14 @@ function resetGame() {
             document.querySelector('#timer-white .timer-label').innerText = "⚪ AI (KOMPUTER)";
             
             statusEl.innerText = "🤖 AI (Putih) sedang berpikir...";
+            // Pemicu awal karena AI memegang putih (jalan duluan)
+            tukarArahJam(); 
             setTimeout(pemicuLangkahAI, 600);
+            return; // Keluar dari fungsi agar tidak double trigger tukarArahJam di bawah
         } else {
             if (board) board.orientation('white');
             
-            // Kembalikan ke posisi normal jika memegang putih vs AI
+            // VS AI SEBAGAI PUTIH: Jam Putih tetap di bawah
             if(wadahAtas && wadahBawah && jamPutih && jamHitam) {
                 wadahAtas.appendChild(jamHitam);
                 wadahBawah.appendChild(jamPutih);
@@ -490,27 +483,26 @@ function resetGame() {
             statusEl.innerText = "Giliran: Klik Bidak Putih (Kamu) untuk memulai!";
         }
     }
+
+    // Jalankan timer pendukung setelah reposisi HTML selesai
+    tukarArahJam(); 
 }
 
 
 // --- FIREBASE ONLINE MULTIPLAYER ENGINE ---
 function kirimLangkahKeFirebase() {
     if (!roomId) return;
-    const durasiPilihan = parseInt(document.getElementById('timeLimit').value);
-
     db.collection("room_catur").doc(roomId).set({
         fen: game.fen(),
         turn: game.turn(),
-        waktuPutih: waktuPutih, // Kirim sisa waktu saat ini
-        waktuHitam: waktuHitam, // Kirim sisa waktu saat ini
+        waktuPutih: waktuPutih,
+        waktuHitam: waktuHitam,
         waktuUpdate: firebase.firestore.FieldValue.serverTimestamp()
     })
     .catch((error) => {
         console.error("Gagal mengirim langkah: ", error);
     });
 }
-
-
 
 function aktifkanListenerOnline() {
     if (!roomId) return;
@@ -522,7 +514,6 @@ function aktifkanListenerOnline() {
                 game.load(data.fen);  
                 if (board) board.position(data.fen);    
                 
-                // Samakan data waktu dengan yang dikirim dari HP lawan
                 if (data.waktuPutih !== undefined) waktuPutih = data.waktuPutih;
                 if (data.waktuHitam !== undefined) waktuHitam = data.waktuHitam;
                 
@@ -536,7 +527,7 @@ function aktifkanListenerOnline() {
     });
 }
 
-// --- ADJUSTED SISTEM RADAR LOBBY (MENYESUAIKAN DATABASE SAYA) ---
+// --- ADJUSTED SISTEM RADAR LOBBY ---
 function daftarkanDiriKeLobby() {
     if (!usernameSaya) {
         usernameSaya = "Pemain_" + Math.floor(1000 + Math.random() * 9000);
@@ -549,14 +540,16 @@ function daftarkanDiriKeLobby() {
         infoProfil.innerHTML = `👤 Akun: <b>${usernameSaya}</b> <span style="color:#39ff14; font-size:11px;">● ONLINE</span>`;
     }
 
-    if (modeAktif === 'friend') {
-        // MENYESUAIKAN FIELD: status "di_lobby" & waktuLogin sesuai data Firebase Anda
+    // DIPERBAIKI: Tetap daftarkan diri ke lobby/pantau jika mode di URL atau select adalah 'friend'
+    if (modeAktif === 'friend' || modeDariUrl === 'friend') {
         db.collection("para_pemain").doc(usernameSaya).set({
             nama: usernameSaya,
             status: "di_lobby",
             lawan: "",
             roomId: "",
             waktuLogin: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+            console.log("Berhasil daftar online lobby.");
         });
         
         pantauPemainLainLobby();
@@ -565,7 +558,6 @@ function daftarkanDiriKeLobby() {
 }
 
 function pantauPemainLainLobby() {
-    // Membaca koleksi "para_pemain" secara Realtime
     db.collection("para_pemain").onSnapshot((snapshot) => {
         const areaDaftar = document.getElementById('daftar-pemain-online');
         if (!areaDaftar) return;
@@ -576,7 +568,6 @@ function pantauPemainLainLobby() {
         snapshot.forEach((doc) => {
             const dataPemain = doc.data();
             
-            // Tampilkan user lain yang statusnya "di_lobby"
             if (dataPemain.nama !== usernameSaya) {
                 adaPemainLain = true;
                 
@@ -619,6 +610,13 @@ function dengarkanTantanganMasuk() {
                         </div>
                     `;
                 }
+            } else if (dataSaya.status === "bermain" && dataSaya.roomId) {
+                // DIPERBAIKI: Jika penantang melihat tantangannya telah diterima (status berubah jadi bermain)
+                if (roomId !== dataSaya.roomId) {
+                    roomId = dataSaya.roomId;
+                    sessionStorage.setItem("catur_room_id", roomId);
+                    aktifkanListenerOnline();
+                }
             } else {
                 if (areaNotif) areaNotif.innerHTML = "";
             }
@@ -627,32 +625,41 @@ function dengarkanTantanganMasuk() {
 }
 
 function kirimTantangan(namaLawan) {
-    roomId = "room_" + usernameSaya + "_vs_" + namaLawan;
+    // Generate Room ID unik berbasis waktu agar tidak konflik di Firebase
+    const uidUnik = Math.floor(100 + Math.random() * 900);
+    roomId = "room_" + usernameSaya + "_vs_" + namaLawan + "_" + uidUnik;
     peranSaya = "w"; 
     sessionStorage.setItem("catur_room_id", roomId);
     sessionStorage.setItem("catur_peran", peranSaya);
 
+    // 1. Buat dokumen room_catur terlebih dahulu
     db.collection("room_catur").doc(roomId).set({
         fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
         turn: "w",
+        waktuPutih: parseInt(document.getElementById('timeLimit').value) || 300,
+        waktuHitam: parseInt(document.getElementById('timeLimit').value) || 300,
         waktuUpdate: firebase.firestore.FieldValue.serverTimestamp()
-    });
+    }).then(() => {
+        // 2. Beri tahu target lawan bahwa dia ditantang
+        db.collection("para_pemain").doc(namaLawan).update({
+            status: "ditantang",
+            lawan: usernameSaya,
+            roomId: roomId
+        });
 
-    db.collection("para_pemain").doc(namaLawan).update({
-        status: "ditantang",
-        lawan: usernameSaya,
-        roomId: roomId
-    });
+        // 3. Ubah status diri sendiri menjadi bermain
+        db.collection("para_pemain").doc(usernameSaya).update({
+            status: "bermain",
+            lawan: namaLawan,
+            roomId: roomId
+        });
 
-    db.collection("para_pemain").doc(usernameSaya).update({
-        status: "bermain",
-        lawan: namaLawan,
-        roomId: roomId
+        alert("Tantangan terkirim! Menunggu konfirmasi lawan...");
+        aktifkanListenerOnline();
+        mulaiPermainanNyata();
+    }).catch((err) => {
+        console.error("Gagal membuat room: ", err);
     });
-
-    alert("Tantangan terkirim! Menunggu konfirmasi lawan...");
-    aktifkanListenerOnline();
-    mulaiPermainanNyata();
 }
 
 function terimaTantangan(namaLawan, idKamar) {
@@ -662,17 +669,18 @@ function terimaTantangan(namaLawan, idKamar) {
     sessionStorage.setItem("catur_room_id", roomId);
     sessionStorage.setItem("catur_peran", peranSaya);
 
+    // Update status diri sendiri ke Firebase
     db.collection("para_pemain").doc(usernameSaya).update({
         status: "bermain"
+    }).then(() => {
+        alert("Tantangan diterima! Anda memegang bidak HITAM.");
+        
+        const areaNotif = document.getElementById('notifikasi-tantangan');
+        if (areaNotif) areaNotif.innerHTML = "";
+        
+        aktifkanListenerOnline();
+        mulaiPermainanNyata();
     });
-
-    alert("Tantangan diterima! Anda memegang bidak HITAM.");
-    
-    const areaNotif = document.getElementById('notifikasi-tantangan');
-    if (areaNotif) areaNotif.innerHTML = "";
-    
-    aktifkanListenerOnline();
-    mulaiPermainanNyata();
 }
 
 function tolakTantangan(namaLawan) {
