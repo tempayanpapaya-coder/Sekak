@@ -19,8 +19,9 @@ let jatahLangkahPuzzle = 5;
 let modePuzzleAktif = false;
 let langkahPuzzleTerpakai = 0;
 const bankPosisiPuzzle = [
-    "6k1/5ppp/8/8/8/5Q2/5PPP/6K1 w - - 0 1",
-    "6k1/6pp/8/8/8/4Q3/5PPP/6K1 w - - 0 1",
+  "8/8/8/8/8/8/5K2/6Rk w - - 0 1",
+  "r5k1/5ppp/8/8/8/5Q2/5PPP/6K1 w - - 0 1",
+  "6k1/5ppp/5r2/8/8/5Q2/5PPP/6K1 w - - 0 1",
     "7k/5Qpp/8/8/8/8/5PPP/6K1 w - - 0 1"
 ];
 
@@ -65,48 +66,106 @@ if (aiEngine) {
 }
 
 // Inisialisasi Kejadian DOM Bersiap
-document.addEventListener("DOMContentLoaded", function () {
-    // Jalankan konfigurasi visual papan catur ChessboardJS terlebih dahulu
+// --- INITIALISASI KEJADIAN DOM BERSIAP (DENGAN SISTEM ANTI-KICK / RECONNECT) ---
+document.addEventListener("DOMContentLoaded", function() {
+    // 1. Konfigurasi visual papan catur ChessboardJS
     const config = {
         draggable: false,
-        position: "start",
-        pieceTheme: "Aset/{piece}.png"
+        position: 'start',
+        pieceTheme: 'Aset/{piece}.png'
     };
-    board = Chessboard("board", config);
+    board = Chessboard('board', config);
 
     // Ikat event klik petak ke DOM Board milik jQuery
-    $("#board").on("click", ".square-55d63", function () {
-        const square = $(this).attr("data-square");
+    $('#board').on('click', '.square-55d63', function() {
+        const square = $(this).attr('data-square');
         onSquareClick(square);
     });
 
-    const gameModeSelect = document.getElementById("gameMode");
+    // Ambil data sesi cadangan jika tidak sengaja keluar/ter-refresh
+    usernameSaya = sessionStorage.getItem("catur_username") || "";
+    roomId = sessionStorage.getItem("catur_room_id") || "";
+    peranSaya = sessionStorage.getItem("catur_peran") || "w";
+
+    const gameModeSelect = document.getElementById('gameMode');
     if (gameModeSelect) {
-        gameModeSelect.value = modeDariUrl;
-
-        // Listener jika user mengubah mode permainan lewat dropdown di dalam game
-        gameModeSelect.addEventListener("change", function () {
+        // JIKA SEBELUMNYA SEDANG MAIN VS TEMAN, KUNCI MODENYA SAAT MASUK LAGI
+        if (roomId && usernameSaya) {
+            gameModeSelect.value = 'friend';
+        } else {
+            gameModeSelect.value = modeDariUrl;
+        }
+        
+        gameModeSelect.addEventListener('change', function() {
             resetGame();
-            daftarkanDiriKeLobby(); // Re-register saat mode berubah ke 'friend'
+            daftarkanDiriKeLobby(); 
         });
-
-        resetGame();
     }
-
-    const userAktifTeks = document.getElementById("user-aktif-teks");
+    
+    const userAktifTeks = document.getElementById('user-aktif-teks');
     if (userAktifTeks && usernameSaya) {
         userAktifTeks.innerText = "Status: Bermain sebagai " + usernameSaya;
     }
 
-    if (modeDariUrl === "friend" && usernameSaya) {
-        window.addEventListener("beforeunload", function () {
+    // 🛑 PERBAIKAN PENTING: Jangan langsung hapus data jika hanya menekan tombol Home / minimised
+    window.addEventListener('beforeunload', function () {
+        const modeAktif = document.getElementById('gameMode')?.value;
+        // Hanya hapus data jika pemain sedang di lobby (tidak sedang bertanding)
+        if (modeAktif === 'friend' && usernameSaya && !roomId) {
             db.collection("para_pemain").doc(usernameSaya).delete();
-        });
-    }
+        }
+    });
 
-    // Daftarkan ke sistem radar online multiplayer
-    daftarkanDiriKeLobby();
+    // ⚡ PROSES RECONNECT (PENYELAMAT PERTANDINGAN) ⚡
+    if (usernameSaya && roomId) {
+        console.log("Mendeteksi sesi aktif! Mencoba menyambung kembali ke room: " + roomId);
+        
+        // Sembunyikan overlay loading/start karena game sebenarnya sudah berjalan
+        const startOverlay = document.getElementById('start-overlay');
+        if (startOverlay) startOverlay.style.display = 'none';
+        
+        gameDimulai = true;
+
+        // Ambil data papan FEN terakhir langsung dari Firebase room Anda yang terputus tadi
+        db.collection("room_catur").doc(roomId).get().then((doc) => {
+            if (doc.exists) {
+                const dataRoom = doc.data();
+                game.load(dataRoom.fen); // Masukkan posisi catur terakhir
+                if (board) {
+                    board.position(dataRoom.fen);
+                    // Sesuaikan arah papan catur Anda kembali
+                    if (peranSaya === 'b') {
+                        board.orientation('black');
+                    } else {
+                        board.orientation('white');
+                    }
+                }
+                
+                // Nyalakan kembali listener online dan jam
+                aktifkanListenerOnline();
+                tukarArahJam();
+                updateStatus();
+                
+                // Tampilkan running text harga diri jika ada
+                const marqueeDuel = document.getElementById('marquee-duel');
+                if (marqueeDuel) marqueeDuel.style.display = 'block';
+
+                alert("⚡ Berhasil kembali ke pertandingan! Lanjutkan perjuanganmu.");
+            } else {
+                // Jika room ternyata sudah tidak ada, baru reset bersih
+                sessionStorage.removeItem("catur_room_id");
+                roomId = "";
+                daftarkanDiriKeLobby();
+            }
+        }).catch(() => {
+            daftarkanDiriKeLobby();
+        });
+    } else {
+        // Jika benar-benar masuk pertama kali (bukan reconnect)
+        daftarkanDiriKeLobby();
+    }
 });
+
 
 function kembaliKeHome() {
     if (usernameSaya) {
@@ -438,9 +497,17 @@ function resetGame() {
 }
 
 function mulaiPermainanNyata() {
-    document.getElementById("start-overlay").style.display = "none";
+    document.getElementById('start-overlay').style.display = 'none';
     gameDimulai = true;
 
+    // 🎵 PEMICU BACKSOUND: Musik mulai berputar begitu tombol START GAME ditekan
+    const audio = document.getElementById('gameBacksound');
+    if (audio) {
+        audio.volume = 0.4; // Atur volume (0.0 sampai 1.0) agar tidak terlalu keras
+        audio.play().catch(error => {
+            console.log("Autoplay diblokir oleh browser, membutuhkan klik tambahan:", error);
+        });
+    }
     const modeAktif = document.getElementById("gameMode").value;
 
     const jamPutih = document.getElementById("timer-white");
@@ -798,4 +865,172 @@ function tolakTantangan(namaLawan) {
         lawan: "",
         roomId: ""
     });
+}
+
+// ==========================================
+// SCRIPT KHUSUS PENGATUR MARQUEE (100% AMAN)
+// ==========================================
+(function() {
+    // Fungsi internal khusus untuk memeriksa dan mengatur visibilitas marquee
+    function aturTampilanMarqueeOtomatis() {
+        const gameModeSelect = document.getElementById('gameMode');
+        const marqueeDuel = document.getElementById('marquee-duel');
+        
+        if (!marqueeDuel) return; // Keluar jika elemen HTML tidak ditemukan
+
+        // Jika select ada dan nilainya 'friend', atau jika variabel global mendeteksi mode friend
+        if ((gameModeSelect && gameModeSelect.value === 'friend') || (typeof modeDariUrl !== 'undefined' && modeDariUrl === 'friend')) {
+            // Jalankan hanya jika game benar-benar sudah dimulai (overlay start hilang)
+            const startOverlay = document.getElementById('start-overlay');
+            if (startOverlay && startOverlay.style.display === 'none') {
+                marqueeDuel.style.display = 'block'; // Tampilkan
+                return;
+            }
+        }
+        
+        // Sembunyikan untuk kondisi lainnya (AI, Puzzle, atau saat masih di Overlay Start)
+        marqueeDuel.style.display = 'none';
+    }
+
+    // 1. Jalankan pemeriksaan setiap kali ada klik di tombol START GAME atau tombol REMATCH
+    document.addEventListener('click', function(e) {
+        if (e.target && (e.target.classList.contains('btn-start') || e.target.classList.contains('btn-rematch') || e.target.onclick?.toString().includes('mulaiPermainanNyata') || e.target.onclick?.toString().includes('resetGame'))) {
+            // Beri sedikit jeda 100ms agar fungsi utama selesai memproses overlay-nya terlebih dahulu
+            setTimeout(aturTampilanMarqueeOtomatis, 100);
+        }
+    });
+
+    setInterval(aturTampilanMarqueeOtomatis, 1000);
+})();
+
+// ===============================================================
+// SCRIPT KHUSUS: SISTEM TANTANG ULANG (REMATCH) ONLINE MULTIPLAYER
+// ===============================================================
+(function() {
+    let intervalPantauSelesai = null;
+
+    // Fungsi untuk mendeteksi siapa lawan kita saat ini berdasarkan data Firestore terbaru
+    function dapatkanNamaLawanAktif() {
+        if (!usernameSaya) return "";
+        // Mencari nama lawan dari string roomId (Format: room_Budi_vs_Andi_123)
+        if (roomId) {
+            let bagian = roomId.split('_vs_');
+            if (bagian.length > 1) {
+                let penantang = bagian[0].replace('room_', '');
+                let ditantang = bagian[1].split('_')[0];
+                return usernameSaya === penantang ? ditantang : penantang;
+            }
+        }
+        return "";
+    }
+
+    function aturTombolRematchOtomatis() {
+        const overlaySelesai = document.getElementById('gameover-overlay');
+        const modeGame = document.getElementById('gameMode')?.value;
+        const areaTombol = document.getElementById('area-tombol-gameover');
+
+        // Fitur ini hanya berjalan jika Game Over muncul dan sedang dalam mode online (friend)
+        if (overlaySelesai && overlaySelesai.style.display === 'flex' && modeGame === 'friend' && areaTombol) {
+            
+            // Hentikan pantauan sementara agar tidak melakukan render ulang terus menerus
+            clearInterval(intervalPantauSelesai);
+
+            const lawan = dapatkanNamaLawanAktif();
+            const turnSekarang = game.turn(); // 'w' atau 'b' saat skakmat terjadi
+
+            // Tentukan apakah SAYA kalah atau menang
+            // Jika giliran putih saat skakmat dan peran saya putih (w), berarti putih kalah.
+            let sayaKalah = (turnSekarang === peranSaya) && game.in_checkmate();
+
+            if (sayaKalah) {
+                // 1. KONDISI BAGI YANG KALAH: Muncul tulisan tantang lagi & bisa diklik
+                areaTombol.innerHTML = `
+                    <button class="btn-rematch" style="background:#ef4444; color:#fff; animation: pulse 1.5s infinite;" onclick="window.kirimTantanganUlang('${lawan}')">
+                        Yahh kalah... TANTANG lagi lah!! ⚔️
+                    </button>
+                `;
+            } else if (game.in_checkmate()) {
+                // 2. KONDISI BAGI YANG MENANG: Menunggu tantangan dari yang kalah
+                areaTombol.innerHTML = `
+                    <p style="color:#39ff14; font-weight:bold; font-size:14px; margin-bottom:10px;">🎉 Kamu Menang! Menunggu lawan menantang kembali...</p>
+                    <button class="btn-rematch" style="background:#555; color:#eee;" onclick="resetGame()">Kembali ke Lobby</button>
+                `;
+            }
+        }
+    }
+
+    // Fungsi Global Baru: Dipicu ketika si kalah menekan tombol "Yahh kalah... TANTANG lagi lah!!"
+    window.kirimTantanganUlang = function(namaLawan) {
+        if (!namaLawan) return alert("Gagal mendeteksi nama lawan untuk rematch.");
+
+        // Buat Room ID baru khusus rematch berbasis waktu agar fresh
+        const uidUnik = Math.floor(100 + Math.random() * 900);
+        roomId = "room_" + usernameSaya + "_vs_" + namaLawan + "_" + uidUnik;
+        peranSaya = "w"; // Si penantang ulang memegang putih kembali
+        sessionStorage.setItem("catur_room_id", roomId);
+        sessionStorage.setItem("catur_peran", peranSaya);
+
+        const areaTombol = document.getElementById('area-tombol-gameover');
+        if (areaTombol) {
+            areaTombol.innerHTML = `<p style="color:#aaa; font-style:italic;">Mengirim permintaan rematch...</p>`;
+        }
+
+        // 1. Buat Room Catur Baru di Firebase
+        db.collection("room_catur").doc(roomId).set({
+            fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            turn: "w",
+            waktuPutih: 300,
+            waktuHitam: 300,
+            waktuUpdate: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+            // 2. Tembak status lawan menjadi 'ditantang' kembali
+            db.collection("para_pemain").doc(namaLawan).update({
+                status: "ditantang",
+                lawan: usernameSaya,
+                roomId: roomId
+            });
+
+            // 3. Ubah status diri sendiri menjadi 'bermain'
+            db.collection("para_pemain").doc(usernameSaya).update({
+                status: "bermain",
+                lawan: namaLawan,
+                roomId: roomId
+            });
+
+            alert("Tantangan ulang berhasil dikirim! Menunggu keputusan si pemenang...");
+            
+            // Sembunyikan overlay game over dan siapkan papan baru
+            document.getElementById('gameover-overlay').style.display = 'none';
+            aktifkanListenerOnline();
+            mulaiPermainanNyata();
+        });
+    };
+
+    // Fungsi pemantau yang berjalan setiap detik untuk mendeteksi kapan game berakhir
+    setInterval(function() {
+        const overlaySelesai = document.getElementById('gameover-overlay');
+        if (overlaySelesai && overlaySelesai.style.display === 'flex') {
+            aturTombolRematchOtomatis();
+        } else {
+            // Jika game sedang berjalan normal, reset interval siap mengawasi akhir game berikutnya
+            if (!intervalPantauSelesai) {
+                intervalPantauSelesai = true;
+            }
+        }
+    }, 1000);
+})();
+
+// Fungsi pembantu agar pemain bisa mematikan/menyalakan musik saat juri menilai
+function toggleAudio() {
+    const audio = document.getElementById('gameBacksound');
+    const btn = document.getElementById('btn-toggle-audio');
+    if (!audio || !btn) return;
+
+    if (audio.paused) {
+        audio.play();
+        btn.innerText = "🔈 Mute Music";
+    } else {
+        audio.pause();
+        btn.innerText = "🔊 Play Music";
+    }
 }
