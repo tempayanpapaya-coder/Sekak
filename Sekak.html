@@ -19,9 +19,6 @@
 <body>
 
 <div class="game-container">
-    <div id="puzzle-counter-box" style="display: none; background: #b91c1c; color: white; padding: 6px; border-radius: 4px; margin-bottom: 10px; font-weight: bold; font-size: 0.9rem; text-align: center;">
-        ⚠️ SISA JATAH LANGKAH MU: <span id="sisa-langkah">5</span> KALI LAGI!
-    </div>
 
     <div id="auth-section" style="padding: 15px; background: #222; color: #fff; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
        <button onclick="kembaliKeHome()" style="padding: 15px; background: #222; color: #fff;" class="btn-home-gaming">
@@ -52,6 +49,9 @@
                 <option value="friend">Vs Teman (Online)</option>
                 <option value="puzzle">Mode 5 Langkah Mati!</option>
             </select>
+             <div id="puzzle-counter-box" style="display: none; background: #b91c1c; color: white; padding: 6px; border-radius: 4px; margin-bottom: 10px; font-weight: bold; font-size: 0.9rem; text-align: center;">
+        ⚠️ SISA JATAH LANGKAH MU: <span id="sisa-langkah">5</span> KALI LAGI!
+    </div>
         </div>
         
         <div class="menu-row" id="difficultyRow">
@@ -108,13 +108,17 @@
         </div>
     </div>
     
-    <div id="gameover-overlay" style="display: none;">
-        <div class="gameover-content">
-            <div class="skakmat-animation">SKAKMAT!</div>
-            <div id="taunt-text" class="taunt-style">Aduh... Otakmu perlu diservis! 🤫</div>
-            <button class="btn-rematch" onclick="resetGame()">MAIN LAGI</button>
+  <div id="gameover-overlay" style="display: none;">
+    <div class="gameover-content">
+        <div class="skakmat-animation">GAMEOVER!</div>
+        <div id="taunt-text" class="taunt-style">Aduh... Otakmu perlu diservis! 🤫</div>
+        
+        <div id="area-tombol-gameover">
+            <button id="btn-aksi-gameover" class="btn-rematch" onclick="resetGame()">MAIN LAGI</button>
         </div>
     </div>
+</div>
+
 </div>
 
 <div id="timer-wrapper-bottom">
@@ -132,6 +136,13 @@
     <button class="btn-reset" onclick="resetGame()" style="margin-top: 10px; width: 100%;">Mulai Ulang Papan</button>
 </div>
 
+
+<audio id="gameBacksound" src="https://github.com/tempayanpapaya-coder/Sekak/raw/refs/heads/main/Aset/backsound.mp3" loop></audio>
 <script src="JS/Sekak.js"></script>
 </body>
+
+<button id="btn-toggle-audio" onclick="toggleAudio()" style="position: fixed; top: 10px; right: 10px; z-index: 9999; background: #222533; color: white; border: 1px solid #444; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+    🔈 Mute Music
+</button>
+
 </html>
