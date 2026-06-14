@@ -312,42 +312,52 @@ function pemicuLangkahAI() {
     aiEngine.postMessage("go movetime 1000");
 }
 
-// --- SISTEM DURASI JAM ---
+// --- SISTEM DURASI JAM (RESET PENUH SETIAP PERGANTIAN GILIRAN) ---
 function tukarArahJam() {
+    // 1. Bersihkan interval yang lama agar tidak menumpuk
     clearInterval(intervalJam);
     if (game.game_over()) return;
 
-    // Jalankan hitung mundur berdasarkan giliran bidak di papan FEN (game.turn())
-    intervalJam = setInterval(function () {
-        if (game.turn() === "w") {
-            // Giliran Putih melangkah
+    // 2. Ambil batas waktu awal dari dropdown HTML (jika tidak ada, default 300 detik / 5 menit)
+    const durasiAwalPilihan = parseInt(document.getElementById('timeLimit').value) || 300;
+
+    // 3. LOGIKA UTAMA: Reset penuh waktu pemain yang BARU SAJA selesai melangkah
+    if (game.turn() === 'w') {
+        // Jika sekarang giliran PUTIH yang jalan, berarti HITAM baru saja selesai melangkah.
+        // Maka, waktu Hitam di-reset penuh kembali ke posisi awal.
+        waktuHitam = durasiAwalPilihan;
+        formatTampilanJam('clock-black', waktuHitam);
+
+        // Beri efek visual lampu aktif ke jam Putih
+        document.getElementById('timer-white').classList.add('active-timer');
+        document.getElementById('timer-black').classList.remove('active-timer');
+    } else {
+        // Jika sekarang giliran HITAM yang jalan, berarti PUTIH baru saja selesai melangkah.
+        // Maka, waktu Putih di-reset penuh kembali ke posisi awal.
+        waktuPutih = durasiAwalPilihan;
+        formatTampilanJam('clock-white', waktuPutih);
+
+        // Beri efek visual lampu aktif ke jam Hitam
+        document.getElementById('timer-black').classList.add('active-timer');
+        document.getElementById('timer-white').classList.remove('active-timer');
+    }
+
+    // 4. Jalankan hitung mundur 1 detik sekali untuk pemain yang sedang giliran berjalan
+    intervalJam = setInterval(function() {
+        if (game.turn() === 'w') {
+            // Putih sedang berpikir, kurangi waktu putih
             waktuPutih--;
-            formatTampilanJam("clock-white", waktuPutih);
-
-            document
-                .getElementById("timer-white")
-                .classList.add("active-timer");
-            document
-                .getElementById("timer-black")
-                .classList.remove("active-timer");
-
-            if (waktuPutih <= 0) pemicuKalahWaktu("Putih");
+            formatTampilanJam('clock-white', waktuPutih);
+            if (waktuPutih <= 0) pemicuKalahWaktu('Putih');
         } else {
-            // Giliran Hitam melangkah
+            // Hitam sedang berpikir, kurangi waktu hitam
             waktuHitam--;
-            formatTampilanJam("clock-black", waktuHitam);
-
-            document
-                .getElementById("timer-black")
-                .classList.add("active-timer");
-            document
-                .getElementById("timer-white")
-                .classList.remove("active-timer");
-
-            if (waktuHitam <= 0) pemicuKalahWaktu("Hitam");
+            formatTampilanJam('clock-black', waktuHitam);
+            if (waktuHitam <= 0) pemicuKalahWaktu('Hitam');
         }
     }, 1000);
 }
+
 
 function formatTampilanJam(idElemen, totalDetik) {
     if (totalDetik < 0) totalDetik = 0;
