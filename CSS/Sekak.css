@@ -1,470 +1,323 @@
-*, *::before, *::after {
-    box-sizing: border-box;
+/* =========================
+   TEMA PEPERANGAN EPIC
+========================= */
+
+body{
+    margin:0;
+    padding:20px;
+    min-height:100vh;
+
+    background:
+    linear-gradient(rgba(10,10,10,.85),rgba(10,10,10,.85)),
+    url("https://images.unsplash.com/photo-1518562180175-34a163b1a9a6?q=80&w=1600");
+
+    background-size:cover;
+    background-position:center;
+    background-attachment:fixed;
+
+    color:#fff;
+    font-family:'Trebuchet MS',sans-serif;
 }
 
-body {
-    margin: 0;
-    padding: 0;
-    background-color: #0d0e12;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: #e2e8f0;
-    -webkit-tap-highlight-color: transparent;
+/* =========================
+   CONTAINER UTAMA
+========================= */
+
+.game-container{
+    max-width:900px;
+    margin:auto;
+
+    background:rgba(15,15,15,.88);
+
+    border:2px solid #8b5a2b;
+
+    border-radius:20px;
+
+    box-shadow:
+    0 0 30px rgba(255,100,0,.25),
+    inset 0 0 40px rgba(255,180,0,.08);
+
+    padding:20px;
 }
 
-/* Container utama pembungkus seluruh elemen */
-.game-container {
-    display: block;
-    width: 95%;
-    max-width: 480px;
-    margin: 20px auto;
-    padding: 10px;
+/* =========================
+   PANEL MENU
+========================= */
+
+.menu-panel{
+    background:
+    linear-gradient(180deg,#2b1d12,#1b1310);
+
+    border:1px solid #9b6a32;
+    border-radius:15px;
+
+    padding:15px;
+    margin-bottom:15px;
+
+    box-shadow:
+    inset 0 0 15px rgba(255,170,0,.15);
 }
 
-/* =============================================================================
-   1. PREMIUM GAMING AUTH SECTION (Kustom Baru)
-   ============================================================================= */
-.gaming-auth-box {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 20px !important;
-    background: linear-gradient(135deg, #111116 0%, #1a1a24 100%) !important;
-    border: 2px solid #00f2fe !important;
-    border-radius: 12px !important;
-    margin-bottom: 15px !important;
-    box-shadow: 0 0 15px rgba(0, 242, 254, 0.25), 
-                inset 0 0 10px rgba(0, 242, 254, 0.1) !important;
-    position: relative;
-    overflow: hidden;
+.menu-row{
+    margin-bottom:12px;
 }
 
-.gaming-auth-box::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 40px;
-    height: 3px;
-    background: #ff007f;
-    box-shadow: 0 0 8px #ff007f;
+.menu-row label{
+    display:block;
+    margin-bottom:5px;
+
+    color:#ffcc66;
+    font-weight:bold;
 }
 
-.gaming-btn {
-    background: linear-gradient(90deg, #ff007f 0%, #7928ca 100%);
-    color: #ffffff;
-    font-family: 'Segoe UI', Roboto, sans-serif;
-    font-size: 0.85rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    padding: 10px 16px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 10px rgba(255, 0, 127, 0.3);
-    display: flex;
-    align-items: center;
-    gap: 8px;
+select{
+    width:100%;
+    padding:10px;
+
+    background:#121212;
+    color:white;
+
+    border:1px solid #aa7733;
+    border-radius:10px;
 }
 
-.gaming-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 20px rgba(255, 0, 127, 0.6), 
-                0 0 5px rgba(121, 40, 202, 0.8);
-    background: linear-gradient(90deg, #7928ca 0%, #ff007f 100%);
+/* ==========================
+   MARQUEE PERTARUNGAN
+========================== */
+
+.marquee-container{
+    width:100%;
+    overflow:hidden;
+    position:relative;
+
+    margin:15px 0;
+
+    background:linear-gradient(
+        90deg,
+        #3d0000,
+        #8b0000,
+        #3d0000
+    );
+
+    border:2px solid #ff6600;
+    border-radius:12px;
+
+    box-shadow:
+        0 0 15px rgba(255,80,0,.5),
+        inset 0 0 10px rgba(255,180,0,.3);
+
+    height:45px;
+
+    display:flex;
+    align-items:center;
 }
 
-.gaming-btn:active {
-    transform: translateY(1px);
+.marquee-text{
+    white-space:nowrap;
+
+    font-size:18px;
+    font-weight:bold;
+
+    color:#ffd700;
+
+    text-shadow:
+        0 0 5px #ff9900,
+        0 0 10px #ff3300;
+
+    position:absolute;
+
+    animation: perangBerjalan 12s linear infinite;
 }
 
-.btn-icon {
-    font-size: 1.1rem;
-    filter: drop-shadow(0 0 2px #fff);
-}
-
-.user-status-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: rgba(0, 0, 0, 0.4);
-    padding: 8px 14px;
-    border-radius: 20px;
-    border: 1px solid rgba(0, 242, 254, 0.2);
-}
-
-.gaming-status-text {
-    font-family: 'Consolas', 'Courier New', Courier, monospace;
-    font-weight: bold;
-    font-size: 0.9rem;
-    color: #00f2fe;
-    text-shadow: 0 0 8px rgba(0, 242, 254, 0.6);
-    letter-spacing: 0.5px;
-}
-
-.pulse-dot {
-    width: 8px;
-    height: 8px;
-    background-color: #39ff14;
-    border-radius: 50%;
-    box-shadow: 0 0 10px #39ff14;
-    animation: ledPulse 1.5s infinite ease-in-out;
-}
-
-@keyframes ledPulse {
-    0% { transform: scale(0.9); opacity: 0.4; box-shadow: 0 0 4px #39ff14; }
-    50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 12px #39ff14, 0 0 20px rgba(57, 255, 20, 0.4); }
-    100% { transform: scale(0.9); opacity: 0.4; box-shadow: 0 0 4px #39ff14; }
-}
-
-/* =============================================================================
-   2. LOBBY SYSTEM
-   ============================================================================= */
-#lobby-section {
-    display: block;
-    background: #15171e !important;
-    border: 1px solid #262936;
-    border-radius: 12px !important;
-    padding: 16px !important;
-    margin-bottom: 15px !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-}
-
-#lobby-section h3 {
-    margin-top: 0;
-    margin-bottom: 12px;
-    font-size: 1.1rem;
-    color: #00f2fe;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-#username-input {
-    display: block;
-    width: 100%;
-    background: #1f222f;
-    border: 1px solid #3b4056;
-    border-radius: 6px;
-    padding: 10px 12px;
-    color: #fff;
-    font-size: 0.95rem;
-    margin-bottom: 10px;
-    transition: border-color 0.2s;
-}
-
-#username-input:focus {
-    outline: none;
-    border-color: #00f2fe;
-}
-
-/* Daftar User Online di Lobby */
-#daftar-user-online li {
-    display: block;
-    background: #1f222f;
-    border: 1px solid #2d3246;
-    border-radius: 6px;
-    padding: 8px 12px;
-    margin-bottom: 8px;
-}
-
-/* Box Notifikasi Tantangan */
-#notifikasi-tantangan {
-    background: #2a1b1b;
-    border: 1px dashed #ef4444;
-    padding: 10px;
-    border-radius: 6px;
-    text-align: center;
-    font-size: 0.9rem;
-    color: #fca5a5;
-}
-
-/* =============================================================================
-   3. MENU PANEL & CONTROL DROPDOWN
-   ============================================================================= */
-.menu-panel {
-    display: block;
-    background: #15171e;
-    border-radius: 12px;
-    padding: 12px;
-    margin-bottom: 15px;
-    border: 1px solid #262936;
-}
-
-.menu-row {
-    display: block;
-    margin-bottom: 10px;
-}
-
-.menu-row:last-child {
-    margin-bottom: 0;
-}
-
-.menu-row label {
-    display: block;
-    font-size: 0.8rem;
-    color: #94a3b8;
-    text-transform: uppercase;
-    margin-bottom: 4px;
-    font-weight: 600;
-}
-
-.menu-panel select {
-    display: block;
-    width: 100%;
-    background: #1f222f;
-    border: 1px solid #3b4056;
-    color: #fff;
-    padding: 8px 10px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    cursor: pointer;
-}
-
-/* =============================================================================
-   4. MARQUEE & PUZZLE COUNTER BAR
-   ============================================================================= */
-#puzzle-counter-box {
-    display: block;
-    background: #7f1d1d !important;
-    border: 1px solid #b91c1c;
-    border-radius: 8px !important;
-    text-align: center;
-    box-shadow: 0 0 10px rgba(185, 28, 28, 0.3);
-}
-
-.marquee-container {
-    display: block;
-    background: #2d1515;
-    border: 1px solid #4c1d15;
-    padding: 6px 0;
-    margin-bottom: 15px;
-    border-radius: 6px;
-    overflow: hidden;
-}
-
-.marquee-text {
-    font-size: 0.75rem;
-    font-weight: bold;
-    color: yellow;
-    white-space: nowrap;
-    animation: jalanMarquee 15s linear infinite;
-}
-
-@keyframes jalanMarquee {
-    0% { transform: translate3d(100%, 0, 0); }
-    100% { transform: translate3d(-100%, 0, 0); }
-}
-
-/* =============================================================================
-   5. TIMER CLOCK INDICATOR (Efek Lampu Neon)
-   ============================================================================= */
-.timer-container {
-    display: block;
-    background: #15171e;
-    border: 1px solid #262936;
-    padding: 8px 12px;
-    border-radius: 8px;
-    margin-bottom: 8px;
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
-
-.timer-label {
-    float: left;
-    font-size: 0.8rem;
-    font-weight: bold;
-    line-height: 20px;
-    color: #94a3b8;
-}
-
-#clock-black, #clock-white {
-    float: right;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 1.1rem;
-    font-weight: bold;
-    line-height: 20px;
-}
-
-.active-timer {
-    border-color: #ff9f43;
-    box-shadow: 0 0 12px rgba(255, 159, 67, 0.4);
-    background: #201a15;
-}
-.active-timer #clock-black, .active-timer #clock-white {
-    color: #ff9f43;
-    text-shadow: 0 0 5px rgba(255, 159, 67, 0.5);
-}
-
-/* =============================================================================
-   6. CHESSBOARD WRAPPER & OVERLAYS (START & GAMEOVER)
-   ============================================================================= */
-.board-wrapper {
-    display: block;
-    position: relative;
-    width: 100%;
-    margin-bottom: 8px;
-    background: #15171e;
-    border-radius: 12px;
-    padding: 6px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-    border: 1px solid #262936;
-}
-
-#board {
-    width: 100%;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 2px solid #1e2230;
-}
-
-#start-overlay, #gameover-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(13, 14, 18, 0.92);
-    border-radius: 12px;
-    z-index: 10;
-    text-align: center;
-}
-
-.overlay-content, .gameover-content {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90%;
-}
-
-.overlay-content h1 {
-    font-size: 2.5rem;
-    margin: 0 0 10px 0;
-    color: #00f2fe;
-    letter-spacing: 2px;
-    text-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
-}
-
-.overlay-content p {
-    font-size: 0.9rem;
-    color: #94a3b8;
-    margin-bottom: 20px;
-}
-
-/* =============================================================================
-   7. PREMIUM BUTTONS & INTERACTIVE STATE
-   ============================================================================= */
-.btn-start, .btn-rematch, .btn-reset {
-    display: block;
-    width: 100%;
-    padding: 12px;
-    font-size: 0.95rem;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.btn-start {
-    background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-    color: #0d0e12;
-    box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
-}
-
-.skakmat-animation {
-    font-size: 2rem;
-    font-weight: 900;
-    color: #ef4444;
-    text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
-    margin-bottom: 10px;
-    animation: pulse 1s infinite alternate;
-}
-
-.taunt-style {
-    font-size: 0.9rem;
-    color: #cbd5e1;
-    margin-bottom: 20px;
-    line-height: 1.4;
-    font-style: italic;
-}
-
-.btn-rematch {
-    background: linear-gradient(135deg, #f51b51 0%, #b91c1c 100%);
-    color: white;
-    box-shadow: 0 4px 15px rgba(185, 28, 28, 0.4);
-}
-
-.btn-reset {
-    background: #1c1f2c;
-    color: #94a3b8;
-    border: 1px solid #33394f;
-    margin-top: 10px;
-}
-
-.btn-reset:hover {
-    background: #25293a;
-    color: #fff;
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    100% { transform: scale(1.05); }
-}
-
-/* =============================================================================
-   8. STATUS GAME BOX
-   ============================================================================= */
-.status-box {
-    display: block;
-    background: #15171e;
-    border: 1px solid #262936;
-    padding: 12px;
-    border-radius: 8px;
-    text-align: center;
-    font-weight: 600;
-    font-size: 0.9rem;
-    color: #00f2fe;
-}
-
-/* =============================================================================
-   9. RESPONSIVE MEDIA QUERIES (Laptop & Desktop Optimization)
-   ============================================================================= */
-@media (min-width: 768px) {
-    .game-container {
-        max-width: 900px;
-        padding: 20px;
+@keyframes perangBerjalan{
+    from{
+        transform:translateX(100%);
     }
 
-    .gaming-auth-box, #lobby-section, .menu-panel {
-        float: left;
-        width: 35%;
-        margin-right: 3%;
-    }
-
-    .timer-container, .board-wrapper, .status-box, .btn-reset, #marquee-duel, #puzzle-counter-box {
-        float: right;
-        width: 62%;
-    }
-    
-    #marquee-duel, #puzzle-counter-box {
-        float: none;
-        display: block;
-        margin-left: 38%;
-        width: 62%;
-    }
-
-    .btn-reset {
-        margin-top: 15px;
+    to{
+        transform:translateX(-100%);
     }
 }
+/* =========================
+   BOARD WRAPPER
+========================= */
 
+.board-wrapper{
+    position:relative;
+
+    padding:15px;
+
+    background:
+    linear-gradient(145deg,#2a1b10,#140f0b);
+
+    border-radius:20px;
+
+    border:2px solid #8f6234;
+
+    box-shadow:
+    0 0 30px rgba(255,120,0,.25);
 }
-.game-container::after {
-    content: "";
-    display: table;
-    clear: both;
+
+/* =========================
+   PAPAN CATUR
+========================= */
+
+#board{
+    border-radius:15px;
+    overflow:hidden;
+
+    box-shadow:
+    0 0 40px rgba(255,150,0,.4);
+}
+
+/* =========================
+   TIMER
+========================= */
+
+.timer-container{
+    background:
+    linear-gradient(180deg,#3a2215,#24140c);
+
+    border:1px solid #cc8b3e;
+
+    border-radius:15px;
+
+    padding:12px;
+
+    text-align:center;
+
+    box-shadow:
+    0 0 15px rgba(255,120,0,.3);
+}
+
+.timer-label{
+    display:block;
+    font-weight:bold;
+    color:#ffcb6b;
+}
+
+#clock-black,
+#clock-white{
+    font-size:1.7rem;
+    font-weight:bold;
+}
+
+/* =========================
+   STATUS
+========================= */
+
+.status-box{
+    background:#1b1b1b;
+
+    border:1px solid #995f2a;
+
+    border-radius:15px;
+
+    padding:12px;
+
+    color:#ffd27f;
+}
+
+/* =========================
+   TOMBOL BESAR
+========================= */
+
+.btn-start,
+.btn-reset,
+.btn-rematch{
+    background:
+    linear-gradient(180deg,#d78a20,#8d4b09);
+
+    color:white;
+
+    border:none;
+
+    border-radius:12px;
+
+    padding:14px 25px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    transition:.3s;
+}
+
+.btn-start:hover,
+.btn-reset:hover,
+.btn-rematch:hover{
+    transform:translateY(-2px);
+
+    box-shadow:
+    0 0 20px orange;
+}
+
+/* =========================
+   TOMBOL KECIL (2 BIJI)
+========================= */
+
+.btn-home-gaming{
+    padding:8px 12px !important;
+
+    font-size:12px;
+
+    border-radius:8px;
+
+    background:
+    linear-gradient(180deg,#734114,#3b220a) !important;
+
+    border:1px solid #d79a45;
+
+    color:white;
+
+    cursor:pointer;
+}
+
+#btn-toggle-audio{
+    padding:6px 10px !important;
+
+    font-size:12px;
+
+    border-radius:8px !important;
+
+    background:
+    linear-gradient(180deg,#734114,#3b220a) !important;
+
+    border:1px solid #d79a45 !important;
+
+    color:white !important;
+}
+
+/* =========================
+   OVERLAY GAME OVER
+========================= */
+
+#gameover-overlay,
+#start-overlay{
+    backdrop-filter:blur(8px);
+
+    background:rgba(0,0,0,.8);
+}
+
+.skakmat-animation{
+    font-size:3rem;
+
+    color:#ffb347;
+
+    text-shadow:
+    0 0 15px orange,
+    0 0 35px red;
+
+    font-weight:bold;
+}
+
+/* =========================
+   EFEK JUDUL
+========================= */
+
+h1,h2,h3,h4{
+    color:#ffcc66;
+
+    text-shadow:
+    0 0 8px rgba(255,180,0,.5);
 }
