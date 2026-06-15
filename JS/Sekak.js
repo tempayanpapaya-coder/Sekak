@@ -441,6 +441,12 @@ function updateStatus() {
 
 // --- RESET SISTEM DAN PAPAN ---
 function resetGame() {
+  
+  const btnMenyerah = document.getElementById("btn-menyerah");
+if (btnMenyerah) {
+    btnMenyerah.style.display = "none";
+}
+  
     clearInterval(intervalJam);
     hapusHighlight();
     kotakAsal = null;
@@ -517,7 +523,14 @@ function resetGame() {
 }
 
 function mulaiPermainanNyata() {
+  
+  const btnMenyerah = document.getElementById("btn-menyerah");
+if (btnMenyerah) {
+    btnMenyerah.style.display = "block";
+}
+  
     document.getElementById('start-overlay').style.display = 'none';
+    aktifkanOnlyGameMode();
     gameDimulai = true;
 
     // 🎵 PEMICU BACKSOUND: Musik mulai berputar begitu tombol START GAME ditekan
@@ -718,64 +731,97 @@ function daftarkanDiriKeLobby() {
 }
 
 
-
 function pantauPemainLainLobby() {
-    console.log("📡 Radar aktif! Mencari pemain lain di Firestore...");
+    console.log("⚡ Radar Pemantau Pemain Aktif dinyalakan...");
+    
+    // Pastikan username dibersihkan dari spasi tak terlihat agar filter akurat
+    const namaSayaBersih = (usernameSaya || sessionStorage.getItem("catur_username") || "").trim();
 
-    db.collection("para_pemain").onSnapshot(
-        snapshot => {
-            const areaDaftar = document.getElementById("daftar-pemain-online");
-
-            // JIKA ELEMEN HTML TIDAK KETEMU, KITA JADIKAN ALERT SUPAYA KETAHUAN ERRORNYA
-            if (!areaDaftar) {
-                alert(
-                    "PERINGATAN: Elemen HTML dengan id='daftar-pemain-online' TIDAK DITEMUKAN di file HTML Anda! Silakan buat elemen <div id='daftar-pemain-online'></div> di HTML."
-                );
-                return;
-            }
-
-            areaDaftar.innerHTML = "";
-            let adaPemainLain = false;
-
-            console.log(
-                "Menerima pembaruan data dari Firebase. Jumlah total dokumen: " +
-                    snapshot.size
-            );
-
-            snapshot.forEach(doc => {
-                const dataPemain = doc.data();
-                console.log("Memeriksa pemain dari database: ", dataPemain);
-
-                // Tampilkan jika namanya ada dan BUKAN nama saya sendiri
-                if (dataPemain.nama && dataPemain.nama !== usernameSaya) {
-                    adaPemainLain = true;
-
-                    const itemPemain = document.createElement("div");
-                    itemPemain.style.cssText =
-                        "display:flex; justify-content:space-between; align-items:center; background:#1f222f; padding:8px 12px; margin-bottom:8px; border-radius:6px; border:1px solid #2d3246; color:#fff;";
-
-                    let tombolAksi = "";
-                    if (dataPemain.status === "di_lobby") {
-                        tombolAksi = `<button onclick="kirimTantangan('${dataPemain.nama}')" style="background:#00b894; color:white; border:none; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:12px;">⚔️ TANTANG</button>`;
-                    } else {
-                        tombolAksi = `<span style="color:#aaa; font-size:12px; font-style:italic;">🚫 BERMAIN</span>`;
-                    }
-
-                    itemPemain.innerHTML = `<span style="font-weight:bold;">🎮 ${dataPemain.nama}</span> ${tombolAksi}`;
-                    areaDaftar.appendChild(itemPemain);
-                }
-            });
-
-            if (!adaPemainLain) {
-                console.log("Tidak ada pemain lain selain " + usernameSaya);
-                areaDaftar.innerHTML = `<p style="color:#aaa; font-size:13px; font-style:italic; text-align:center;">Lobby sepi, Ayo ajak teman-temanmu untuk bertanding bersama</p>`;
-            }
-        },
-        error => {
-            console.error("❌ Error Snapshot Radar: ", error);
+    db.collection("para_pemain").onSnapshot((snapshot) => {
+        const areaDaftar = document.getElementById('daftar-pemain-online');
+        
+        if (!areaDaftar) {
+            console.error("Error: Elemen dengan ID 'daftar-pemain-online' tidak ditemukan di HTML!");
+            return;
         }
-    );
+
+        areaDaftar.innerHTML = ""; // Bersihkan tampilan list lama
+        let adaPemainLain = false;
+
+        snapshot.forEach((doc) => {
+            const dataPemain = doc.data();
+            
+            // Ambil nama dari document ID atau dari field 'nama' sebagai backup
+            const namaUserLawan = (doc.id || dataPemain.nama || "").trim(); 
+
+            // SINKRONISASI: Jika nama kosong ATAU itu adalah diri Anda sendiri, LEWATI!
+            if (!namaUserLawan || namaUserLawan === namaSayaBersih) {
+                return; 
+            }
+
+            // Jika sampai di sini, berarti fix itu adalah player LAIN yang sedang online
+            adaPemainLain = true;
+            
+            // Buat komponen kotak untuk list pemain lain
+            const itemPemain = document.createElement('div');
+            itemPemain.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:#1f222f; padding:10px 15px; margin-bottom:10px; border-radius:6px; border:1px solid #2d3246;";
+            
+            let infoStatusTeks = "";
+            let tombolAksiTantang = "";
+
+            // Cek status kesibukan pemain lain di database
+            if (dataPemain.status === "bermain" || dataPemain.status === "bertanding") {
+                infoStatusTeks = `<span style="color:#ef4444; font-size:11px; font-weight:bold;">🔴 SEDANG BERTANDING</span>`;
+                tombolAksiTantang = `
+                    <button disabled style="background:#3d404e; color:#777; border:none; padding:6px 12px; border-radius:4px; font-size:12px; cursor:not-allowed; font-weight:bold;">
+                        🚫 SIBUK
+                    </button>
+                `;
+            } else if (dataPemain.status === "ditantang") {
+                infoStatusTeks = `<span style="color:#ff9f43; font-size:11px; font-weight:bold;">⏳ MENUNGGU NOTIF</span>`;
+                tombolAksiTantang = `
+                    <button disabled style="background:#3d404e; color:#ff9f43; border:none; padding:6px 12px; border-radius:4px; font-size:12px; cursor:not-allowed; font-weight:bold;">
+                        PENDING
+                    </button>
+                `;
+            } else {
+                // Status default: "di_lobby"
+                infoStatusTeks = `<span style="color:#39ff14; font-size:11px; font-weight:bold;">● READY (DI LOBBY)</span>`;
+                tombolAksiTantang = `
+                    <button onclick="kirimTantangan('${namaUserLawan}')" style="background:#00b894; color:white; border:none; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:12px; transition:0.2s; box-shadow: 0 2px 6px rgba(0,184,148,0.3);">
+                        ⚔️ TANTANG
+                    </button>
+                `;
+            }
+
+            // Masukkan struktur visual ke dalam item list
+            itemPemain.innerHTML = `
+                <div style="text-align: left;">
+                    <span style="font-weight:bold; color:#fff; font-size:14px; display:block; margin-bottom:2px;">🎮 ${namaUserLawan}</span>
+                    ${infoStatusTeks}
+                </div>
+                <div>
+                    ${tombolAksiTantang}
+                </div>
+            `;
+            
+            areaDaftar.appendChild(itemPemain);
+        });
+
+        // Kondisi jika tidak ada pemain lain sama sekali di database
+        if (!adaPemainLain) {
+            areaDaftar.innerHTML = `
+                <div style="text-align:center; padding:15px; color:#aaa; font-size:13px; font-style:italic;">
+                    📭 Lobby sepi... Belum ada pemain lain yang online saat ini.
+                </div>
+            `;
+        }
+    }, (error) => {
+        console.error("Radar Firebase gagal memantau room lobby: ", error);
+    });
 }
+
+
 
 function dengarkanTantanganMasuk() {
     db.collection("para_pemain")
@@ -1145,5 +1191,113 @@ function bukaModalEditProfil() {
             console.error("Gagal update profil: ", error);
             alert("Gagal mengubah nama karena kendala jaringan database.");
         });
+    }
+}
+function pemicuMenyerah() {
+
+    if (!confirm("Yakin ingin menyerah?")) {
+        return;
+    }
+
+    const mode = document.getElementById("gameMode").value;
+
+    // MODE AI
+    if (mode === "ai") {
+        clearInterval(intervalJam);
+
+        document.getElementById('taunt-text').innerHTML =
+            "🤖 Kamu menyerah.<br><span style='color:#ef4444'>AI dinyatakan menang!</span>";
+
+        document.getElementById('gameover-overlay').style.display = 'flex';
+
+setTimeout(() => {
+    kembaliKeHome();
+}, 2000);
+
+        document.getElementById('area-tombol-gameover').innerHTML = `
+            <button class="btn-rematch" onclick="resetGame()">
+                Main Lagi
+            </button>
+        `;
+
+        return;
+    }
+
+    // MODE PUZZLE
+    if (mode === "puzzle") {
+        resetGame();
+        return;
+    }
+
+    if (!confirm("Apakah kamu yakin ingin menyerah dan mengakhiri pertandingan ini?")) {
+        return;
+    }
+
+    if (!roomId) {
+        alert("Pertandingan tidak ditemukan.");
+        return;
+    }
+
+    // 1. Deteksi nama lawan berdasarkan struktur nama Room ID (room_Penantang_vs_Lawan_123)
+    let namaLawan = "";
+    let bagian = roomId.split('_vs_');
+    if (bagian.length > 1) {
+        let penantang = bagian[0].replace('room_', '');
+        let ditantang = bagian[1].split('_')[0];
+        namaLawan = (usernameSaya === penantang) ? ditantang : penantang;
+    }
+
+    if (!namaLawan) {
+        namaLawan = "Lawan"; // Antisipasi cadangan jika nama gagal terurai
+    }
+
+    // 2. Kirim data ke Firebase Room bahwa game selesai karena menyerah
+    db.collection("room_catur").doc(roomId).update({
+        statusGame: "selesai",
+        pemenang: namaLawan,
+        keterangan: `${usernameSaya} Menyerah`
+    }).then(() => {
+        clearInterval(intervalJam);
+        
+        // 3. Update status diri sendiri dan lawan di database kembali ke lobby
+        db.collection("para_pemain").doc(usernameSaya).update({ status: "di_lobby", lawan: "", roomId: "" });
+        db.collection("para_pemain").doc(namaLawan).update({ status: "di_lobby", lawan: "", roomId: "" });
+
+        // 4. Tampilkan pemberitahuan kekalahan di layar overlay
+        document.getElementById('taunt-text').innerHTML = `🏳️ Anda telah menyerah.<br><span style='color:#ef4444;'>Pemenangnya adalah ${namaLawan}!</span>`;
+        document.getElementById('gameover-overlay').style.display = 'flex';
+        
+        // Ubah tombol gameover menjadi kembali ke lobby
+        document.getElementById('area-tombol-gameover').innerHTML = `
+    <button class="btn-rematch"
+            onclick="resetGame()">
+        🔄 Main Lagi
+    </button>
+
+    <button class="btn-rematch"
+            style="margin-top:10px;background:#374151;"
+            onclick="window.location.href='index.html'">
+        🏠 Kembali ke Lobby
+    </button>
+`;
+    }).catch((err) => {
+        console.error("Gagal memproses penyerahan: ", err);
+    });
+}
+function aktifkanOnlyGameMode() {
+    document.querySelectorAll('.hide-in-game').forEach(el => {
+        el.style.display = 'none';
+    });
+
+    // Jika penonton
+    if (peranSaya === "viewer") {
+        const homeBtn = document.querySelector(".btn-home-gaming");
+        if(homeBtn){
+            homeBtn.style.display = "block";
+            
+            if(peranSaya !== "viewer"){
+    document.getElementById("game-action-panel").style.display = "block";
+}
+        }
     }
 }
