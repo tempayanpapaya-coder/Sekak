@@ -271,7 +271,7 @@ select{
 
     color:#ffd700;
 
-    font-size:3rem;
+    font-size:1rem;
 
     text-shadow:
         0 0 10px orange,
@@ -416,4 +416,26 @@ h1,h2,h3,h4{
 
     text-shadow:
     0 0 8px rgba(255,180,0,.5);
+}
+#balon-ejek{
+    display:none;
+    margin-top:10px;
+    padding:10px;
+    border-radius:12px;
+    background:#222;
+    color:white;
+    text-align:center;
+    font-weight:bold;
+    animation:munculEjek 0.3s ease;
+}
+
+@keyframes munculEjek{
+    from{
+        opacity:0;
+        transform:translateY(10px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
 }
