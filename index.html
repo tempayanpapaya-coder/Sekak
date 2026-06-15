@@ -115,6 +115,18 @@ input[type="text"]:focus {
     <input type="text" id="input-nama-pemain" placeholder="Masukkan Nama / Username Kamu..." autocomplete="off">
     <button class="btn-masuk" onclick="prosesLoginOtomatis()">MASUK KE PERMAINAN</button>
 </div>
+
+<div class="live-matches-container" style="margin-top: 30px; background: #151722; padding: 20px; border-radius: 8px; color: #fff; max-width: 400px; margin-left: auto; margin-right: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+    <h3 style="color: #ff9f43; margin-top: 0; font-size: 16px; border-bottom: 1px solid #2d3246; padding-bottom: 8px; text-align: center;">
+        🔥 PERTANDINGAN LIVE (SEDANG BERLANGSUNG)
+    </h3>
+    
+    <div id="daftar-room-aktif">
+        <p style="color: #aaa; font-size: 13px; font-style: italic; text-align: center;">Mencari pertandingan aktif...</p>
+    </div>
+</div>
+
+
 <marquee class="pesanAnak" > Pertarungan Harga diri, yang kalah Pindah AGAMA</marquee>
 <script>
 // =============================================================================
@@ -143,7 +155,18 @@ function prosesLoginOtomatis() {
         return;
     }
 
-    // 1. Simpan data identitas ke dalam Session Storage Browser
+    const akunTerkunci = localStorage.getItem("akun_device_ini");
+
+    if (akunTerkunci) {
+
+        if (namaInput !== akunTerkunci) {
+            alert(`⚠️ AKSES DITOLAK!\nPerangkat ini sudah dikunci untuk akun: "${akunTerkunci}".\nAnda tidak bisa menggunakan nama lain di HP/Device ini!`);
+            return; // 🛑 STOP! Gagalkan proses login, tidak lanjut ke Firebase
+        }
+    } else {
+        localStorage.setItem("akun_device_ini", namaInput);
+    }
+
     sessionStorage.setItem("catur_username", namaInput);
     sessionStorage.setItem("catur_peran", "w"); // Default peran awal sebagai Putih
     sessionStorage.setItem("catur_room_id", "");  // Belum ada room sebelum membuat/menerima tantangan
@@ -159,7 +182,6 @@ function prosesLoginOtomatis() {
         console.log("Pendaftaran Akun Berhasil!");
         
         // 3. SEHARUSNYA OTOMATIS REDIRECT: Pindahkan pemain langsung ke arena game catur
-        // Kita arahkan default ke mode 'ai' (Singleplayer) atau halaman utama arena catur
         window.location.href = "Sekak.html?mode=ai";
     })
     .catch((error) => {
@@ -167,6 +189,96 @@ function prosesLoginOtomatis() {
         alert("Terjadi kesalahan jaringan database. Silakan coba lagi.");
     });
 }
+
+// Otomatis deteksi akun saat halaman index dimuat
+document.addEventListener("DOMContentLoaded", function() {
+    const akunTerkunci = localStorage.getItem("akun_device_ini");
+    const inputNama = document.getElementById('input-nama-pemain');
+
+    if (akunTerkunci && inputNama) {
+        inputNama.value = akunTerkunci; // Masukkan nama yang terkunci otomatis
+        inputNama.disabled = true;      // Matikan inputnya agar tidak bisa diketik ulang
+        inputNama.style.background = "#222533"; // Efek visual terkunci (opsional)
+        inputNama.style.color = "#aaa";
+    }
+});
+
+// --- SCRIPT REALTIME MONITORING LIVE MATCHES ---
+document.addEventListener("DOMContentLoaded", function() {
+    // Jalankan fungsi pemantau room aktif
+    pantauPertandinganLive();
+});
+
+function pantauPertandinganLive() {
+    console.log("Memulai pemantauan pertandingan aktif...");
+    
+    // Ambil data secara realtime dari koleksi room_catur
+    db.collection("room_catur").onSnapshot((snapshot) => {
+        const areaDaftarRoom = document.getElementById('daftar-room-aktif');
+        if (!areaDaftarRoom) return;
+
+        areaDaftarRoom.innerHTML = ""; // Bersihkan tampilan lama
+
+        if (snapshot.empty) {
+            areaDaftarRoom.innerHTML = `<p style="color:#aaa; font-size:13px; font-style: italic; text-align:center;">📭 Saat ini tidak ada pertandingan aktif.</p>`;
+            return;
+        }
+
+        snapshot.forEach((doc) => {
+            const roomIdAktif = doc.id; // Contoh: room_Budi_vs_Andi_123
+            
+            // Kita pecah ID Roomnya untuk mengambil nama Pemain Putih dan Hitam agar estetik
+            // Format ID Room kita sebelumnya: room_NamaPutih_vs_NamaHitam_Angka
+            let namaPutih = "Pemain 1";
+            let namaHitam = "Pemain 2";
+            
+            if (roomIdAktif.includes("_vs_")) {
+                let bagian = roomIdAktif.split('_vs_');
+                if (bagian.length > 1) {
+                    namaPutih = bagian[0].replace('room_', '');
+                    namaHitam = bagian[1].split('_')[0];
+                }
+            }
+
+            // Buat komponen HTML untuk setiap pertandingan
+            const itemRoom = document.createElement('div');
+            itemRoom.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:#1f222f; padding:10px 15px; margin-bottom:10px; border-radius:6px; border:1px solid #2d3246;";
+
+            itemRoom.innerHTML = `
+                <div style="text-align: left;">
+                    <span style="color:#fff; font-weight:bold; font-size:13px;">⚪ ${namaPutih}</span> 
+                    <br><span style="color:#aaa; font-size:11px; font-weight:bold; display:block; margin:2px 0;">VS</span>
+                    <span style="color:#fff; font-weight:bold; font-size:13px;">⚫ ${namaHitam}</span>
+                </div>
+                <button onclick="tontonPertandingan('${roomIdAktif}')" style="background:#ff9f43; color:white; border:none; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:12px; transition: 0.2s;">
+                    👁️ TONTON
+                </button>
+            `;
+
+            areaDaftarRoom.appendChild(itemRoom);
+        });
+    }, (error) => {
+        console.error("Error mendengarkan live matches: ", error);
+    });
+}
+
+// Fungsi yang dipicu saat tombol 👁️ TONTON diklik
+function tontonPertandingan(idKamar) {
+    // Set identitas sebagai Penonton (Spectator) di Session Storage
+    sessionStorage.setItem("catur_room_id", idKamar);
+    sessionStorage.setItem("catur_peran", "viewer"); // Peran khusus penonton, bukan 'w' atau 'b'
+    
+    // Buat nama samaran penonton agar tidak bentrok dengan pemain asli
+    if (!sessionStorage.getItem("catur_username")) {
+        sessionStorage.setItem("catur_username", "Penonton_" + Math.floor(1000 + Math.random() * 9000));
+    }
+
+    alert("Masuk sebagai mode penonton. Anda tidak dapat menggerakkan bidak.");
+    
+    // Alihkan langsung ke halaman arena catur dengan parameter mode friend
+    window.location.href = "Sekak.html?mode=friend";
+}
+
 </script>
 
 </body>
