@@ -353,7 +353,24 @@ function pemicuKalahWaktu(siapaYangHabis) {
     document.getElementById("timer-black").classList.remove("active-timer");
 
     const pemenang = siapaYangHabis === "Putih" ? "Hitam" : "Putih (Kamu)";
-    statusEl.innerHTML = `⏰ <b>GAME OVER!</b> Waktu Berpikir ${siapaYangHabis} Habis. Pemain <b>${pemenang} MENANG!</b>`;
+    statusEl.innerHTML = `⏰ <b>GAME OVER!</b> Waktu Berpikir ${siapaYangHabis} Habis.
+    Pemain <b>${pemenang} MENANG!</b>`;
+    if(roomId){
+
+    db.collection("room_catur")
+    .doc(roomId)
+    .update({
+
+        statusGame: "selesai",
+
+        pemenang:
+        siapaYangHabis === "Putih"
+        ? "Hitam"
+        : "Putih"
+
+    });
+
+}
 }
 
 // --- VISUAL HIGHLIGHT ---
@@ -441,6 +458,7 @@ function updateStatus() {
 
 // --- RESET SISTEM DAN PAPAN ---
 function resetGame() {
+  document.getElementById("timeLimit").disabled = false;
   
   const btnMenyerah = document.getElementById("btn-menyerah");
 if (btnMenyerah) {
@@ -549,6 +567,8 @@ if (btnMenyerah) {
     const wadahBawah = document.getElementById("timer-wrapper-bottom");
 
     if (modeAktif === "friend") {
+      document.getElementById("timeLimit").disabled = true;
+      
         if (!usernameSaya || !roomId) {
             alert(
                 "Data sesi online tidak ditemukan! Silakan masuk via halaman utama."
@@ -657,6 +677,20 @@ function aktifkanListenerOnline() {
         .onSnapshot(doc => {
             if (doc.exists) {
                 const data = doc.data();
+                
+                if(data.statusGame === "selesai"){
+
+    clearInterval(intervalJam);
+
+    document.getElementById('taunt-text').innerHTML =
+    "⏰ Pertandingan selesai karena waktu habis.";
+
+    document.getElementById('gameover-overlay')
+    .style.display = 'flex';
+
+    return;
+}
+                
                 if (data.fen !== game.fen()) {
                     game.load(data.fen);
                     if (board) board.position(data.fen);
@@ -881,13 +915,24 @@ function kirimTantangan(namaLawan) {
     const durasiPilihan = parseInt(document.getElementById('timeLimit').value) || 300;
 
     // 1. Buat dokumen room_catur terlebih dahulu
-    db.collection("room_catur").doc(roomId).set({
-        fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-        turn: "w",
-        waktuPutih: parseInt(document.getElementById('timeLimit').value) || 300,
-        waktuHitam: parseInt(document.getElementById('timeLimit').value) || 300,
-        waktuUpdate: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => {
+    const durasiGameDipilih =
+parseInt(document.getElementById('timeLimit').value) || 300;
+
+db.collection("room_catur").doc(roomId).set({
+    fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+
+    turn: "w",
+
+    durasiGame: durasiGameDipilih,
+
+    waktuPutih: durasiGameDipilih,
+    waktuHitam: durasiGameDipilih,
+
+    statusGame: "berjalan",
+
+    waktuUpdate: firebase.firestore.FieldValue.serverTimestamp()
+})
+    .then(() => {
         // 2. Beri tahu target lawan bahwa dia ditantang
         db.collection("para_pemain").doc(namaLawan).update({
             status: "ditantang",
@@ -927,6 +972,21 @@ function terimaTantangan(namaLawan, idKamar) {
     db.collection("para_pemain").doc(usernameSaya).update({
         status: "bermain"
     }).then(() => {
+      db.collection("room_catur")
+.doc(roomId)
+.get()
+.then((doc)=>{
+
+    const data = doc.data();
+
+    if(data.durasiGame){
+
+        document.getElementById("timeLimit").value =
+        data.durasiGame;
+
+    }
+
+});
         alert("Tantangan diterima! Anda memegang bidak HITAM.");
         
         const areaNotif = document.getElementById('notifikasi-tantangan');
