@@ -385,6 +385,14 @@ function updateStatus() {
             } else {
                 kalimatEjekan = "🎉 LUAR BIASA! Kamu berhasil mengalahkan komputer AI ini! 🧠💥";
             }
+             // 🔥 KIRIM STATUS SELESAI & PEMENANG KE FIREBASE ROOM
+            if (roomId) {
+                db.collection("room_catur").doc(roomId).update({
+                    statusGame: "selesai",
+                    pemenang: pemenangFirebase
+                });
+            }
+        
         } else if (mode === 'friend') {
             // Mode Online: Cek apakah SAYA yang kalah atau MENANG
             let sayaKalah = (turnSekarang === peranSaya);
@@ -657,40 +665,58 @@ function aktifkanListenerOnline() {
 
 // --- ADJUSTED SISTEM RADAR LOBBY ---
 function daftarkanDiriKeLobby() {
+    // 1. Cek apakah sudah punya nama di sessionStorage atau localStorage alat pengunci
+    if (!usernameSaya) {
+        usernameSaya = sessionStorage.getItem("catur_username") || localStorage.getItem("akun_device_ini");
+    }
+    
+    // 2. Jika benar-benar kosong (pemain baru), buatkan nama acak otomatis
     if (!usernameSaya) {
         usernameSaya = "Pemain_" + Math.floor(1000 + Math.random() * 9000);
         sessionStorage.setItem("catur_username", usernameSaya);
+        localStorage.setItem("akun_device_ini", usernameSaya); // Amankan ke pengunci alat
     }
 
+    // 3. Deteksi mode permainan yang sedang aktif terpilih di halaman
     const gameModeSelect = document.getElementById('gameMode');
     const modeAktif = gameModeSelect ? gameModeSelect.value : modeDariUrl;
     
+    // 4. UPDATE VISUAL: Tampilkan nama terbaru di layar (Sangat penting setelah Edit Profil!)
     const infoProfil = document.getElementById('info-pemain-aktif');
     if (infoProfil) {
         infoProfil.innerHTML = `👤 Akun: <b>${usernameSaya}</b> <span style="color:#39ff14; font-size:11px;">● ONLINE</span>`;
     }
 
+    // 5. JIKA SEDANG MASUK MODE ONLINE (FRIEND)
     if (modeAktif === 'friend') {
-        // 🔥 KUNCI RECONNECT: Jika mendeteksi sedang ada pertandingan berjalan, JANGAN TIMPA STATUS!
+        
+        // 🔥 KUNCI RECONNECT: Jika mendeteksi ada pertandingan yang sedang berjalan, 
+        // JANGAN TIMPA STATUS JADI LOBBY! Langsung aktifkan radar game.
         if (roomId) {
             console.log("Sesi bertanding aktif terdeteksi, mengaktifkan radar permainan...");
             aktifkanListenerOnline();
             return; // Stop fungsi di sini agar data di database tidak ter-reset
         }
 
-        // Jika murni baru masuk lobby (tidak sedang main)
+        // Jika murni baru masuk lobby utama (tidak sedang dalam game)
         db.collection("para_pemain").doc(usernameSaya).set({
             nama: usernameSaya,
             status: "di_lobby",
             lawan: "",
             roomId: "",
             waktuLogin: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+            console.log("Pendaftaran database berhasil untuk nama: " + usernameSaya);
+        }).catch((err) => {
+            console.error("Gagal mendaftar ke database: ", err);
         });
         
+        // Hidupkan radar pencarian pemain dan tantangan masuk
         pantauPemainLainLobby();
         dengarkanTantanganMasuk();
     }
 }
+
 
 
 function pantauPemainLainLobby() {
@@ -1044,5 +1070,80 @@ function toggleAudio() {
     } else {
         audio.pause();
         btn.innerText = "🔊 Play Music";
+    }
+}
+
+// --- FITUR EDIT PROFIL (ANTI TYPO & SYNC DATABASE) ---
+function bukaModalEditProfil() {
+    // Ambil nama yang saat ini sedang aktif digunakan
+    const namaSekarang = sessionStorage.getItem("catur_username") || usernameSaya;
+    
+    // Tampilkan prompt popup pop-up untuk memasukkan nama baru
+    let namaBaru = prompt("Masukkan nama profil baru kamu (Maksimal 15 karakter):", namaSekarang);
+    
+    // Validasi jika user menekan batal atau input kosong/sama saja
+    if (namaBaru === null) return; 
+    namaBaru = namaBaru.trim();
+    
+    if (namaBaru === "") {
+        alert("Nama tidak boleh kosong!");
+        return;
+    }
+    
+    if (namaBaru === namaSekarang) {
+        alert("Nama baru sama dengan nama lama.");
+        return;
+    }
+
+    if (namaBaru.length > 15) {
+        alert("Nama terlalu panjang! Maksimal 15 karakter.");
+        return;
+    }
+
+    // Konfirmasi final sebelum eksekusi ke database
+    if (confirm(`Apakah kamu yakin ingin mengubah nama dari "${namaSekarang}" menjadi "${namaBaru}"?`)) {
+        
+        // 1. Bersihkan/Hapus dokumen lama di Firestore agar tidak menjadi sampah database
+        db.collection("para_pemain").doc(namaSekarang).delete()
+        .then(() => {
+            
+            // 2. Buat dokumen baru dengan nama yang sudah diperbaiki typo-nya
+            return db.collection("para_pemain").doc(namaBaru).set({
+                nama: namaBaru,
+                status: "di_lobby",
+                lawan: "",
+                roomId: "",
+                waktuLogin: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        })
+        .then(() => {
+            // 3. Update semua penyimpanan lokal di browser perangkat
+            localStorage.setItem("akun_device_ini", namaBaru); // Update Kunci Perangkat
+            sessionStorage.setItem("catur_username", namaBaru); // Update Sesi Game
+            
+            // 4. Perbarui variabel global di script yang sedang berjalan
+            usernameSaya = namaBaru;
+
+            // 5. Perbarui tampilan teks di layar secara realtime
+            const infoProfil = document.getElementById('info-pemain-aktif');
+            if (infoProfil) {
+                infoProfil.innerHTML = `👤 Akun: <b>${usernameSaya}</b> <span style="color:#39ff14; font-size:11px;">● ONLINE</span>`;
+            }
+            
+            const userAktifTeks = document.getElementById('user-aktif-teks');
+            if (userAktifTeks) {
+                userAktifTeks.innerText = "Status: Bermain sebagai " + usernameSaya;
+            }
+
+            alert("🎉 Profil berhasil diperbarui! Nama kamu sekarang adalah: " + namaBaru);
+            
+            // Hubungkan ulang radar lobby dengan identitas baru
+            resetGame();
+            daftarkanDiriKeLobby();
+        })
+        .catch((error) => {
+            console.error("Gagal update profil: ", error);
+            alert("Gagal mengubah nama karena kendala jaringan database.");
+        });
     }
 }
