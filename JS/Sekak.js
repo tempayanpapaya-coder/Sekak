@@ -74,6 +74,10 @@ document.addEventListener("DOMContentLoaded", function() {
     };
     board = Chessboard('board', config);
 
+setTimeout(() => {
+    board.resize();
+}, 300);
+
     $('#board').on('click', '.square-55d63', function() {
         const square = $(this).attr('data-square');
         onSquareClick(square);
@@ -458,6 +462,7 @@ function updateStatus() {
 
 // --- RESET SISTEM DAN PAPAN ---
 function resetGame() {
+  document.getElementById("arena-pertandingan").style.display = "none";
   document.getElementById("timeLimit").disabled = false;
   
   const btnMenyerah = document.getElementById("btn-menyerah");
@@ -538,9 +543,23 @@ if (btnMenyerah) {
     document.getElementById("timer-black").classList.remove("active-timer");
 
     statusEl.innerText = "Menu Terkunci. Klik START GAME untuk mulai.";
+    
+    document.getElementById("btn-reset-board").style.display = "block";
 }
 
 function mulaiPermainanNyata() {
+  document.getElementById("arena-pertandingan").style.display = "block";
+document.getElementById("panel-start").style.display = "none";
+
+document.getElementById("btn-reset-board").style.display = "block";
+
+
+setTimeout(() => {
+    if(board){
+        board.resize();
+        board.position(game.fen());
+    }
+}, 100);
   
   const btnMenyerah = document.getElementById("btn-menyerah");
 if (btnMenyerah) {
@@ -1360,4 +1379,72 @@ function aktifkanOnlyGameMode() {
 }
         }
     }
+}
+
+function restartBoardOnly() {
+
+    clearInterval(intervalJam);
+
+    hapusHighlight();
+    kotakAsal = null;
+    gameDimulai = false;
+
+    game.reset();
+
+    if (board) {
+        board.start();
+        board.orientation("white");
+    }
+
+    const durasiPilihan =
+        parseInt(document.getElementById("timeLimit").value) || 300;
+
+    waktuPutih = durasiPilihan;
+    waktuHitam = durasiPilihan;
+
+    formatTampilanJam("clock-white", waktuPutih);
+    formatTampilanJam("clock-black", waktuHitam);
+
+    document.getElementById("timer-white")
+        .classList.remove("active-timer");
+
+    document.getElementById("timer-black")
+        .classList.remove("active-timer");
+
+    statusEl.innerText = "Papan berhasil diulang. Klik bidak untuk mulai bermain.";
+}
+function rematchGame() {
+
+    document.getElementById("gameover-overlay").style.display = "none";
+
+    restartBoardOnly();
+
+}
+const daftarEjekan = [
+    "🙂 Semangat ya.",
+    "😏 Masih bisa dibalik kok.",
+    "😂 Yakin langkah itu benar?",
+    "🥱 Lama mikirnya.",
+    "🤣 Aku mulai kasihan.",
+    "🤡 Strategi atau tersandung?",
+    "🔥 Ayo, kasih perlawanan!",
+    "💀 Raja-mu mulai panik."
+];
+
+let timerEjek = null;
+
+function ejekLawan() {
+
+    const balon = document.getElementById("balon-ejek");
+
+    const acak = Math.floor(Math.random() * daftarEjekan.length);
+
+    balon.innerText = daftarEjekan[acak];
+    balon.style.display = "block";
+
+    clearTimeout(timerEjek);
+
+    timerEjek = setTimeout(() => {
+        balon.style.display = "none";
+    }, 2000);
 }
