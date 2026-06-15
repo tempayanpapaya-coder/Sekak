@@ -38,6 +38,15 @@
         </div>
     </div>
     
+    <div class="tombol-start" id="panel-start">
+    <h1>READY?</h1>
+
+    <button class="btn-start"
+            onclick="mulaiPermainanNyata()">
+        START GAME
+    </button>
+</div>
+    
     <div id="notifikasi-tantangan"></div>
 
     <div id="lobby-panel" class="hide-in-game">
@@ -92,25 +101,23 @@
             🔥 PERTARUNGAN HARGA DIRI! NO REMATCH! JIKA KALAH WAJIB BERBENAH! 🤜💥🤛 &nbsp;&nbsp;&nbsp;&nbsp;
         </div>
     </div>
-    
-    
+     
+    <div id="arena-pertandingan" style="display:none;">
+
+    <!-- timer atas -->
 <div id="timer-wrapper-top">
     <div id="timer-black" class="timer-container">
         <span class="timer-label">⚫ HITAM</span>
         <span id="clock-black">05:00</span>
     </div>
 </div>
-
+    <!-- board -->
 <div class="board-wrapper">
     <div id="board"></div>
 
-    <div id="start-overlay">
-        <div class="overlay-content">
-            <h1>READY?</h1>
-            <p>Atur mode di atas, lalu tekan tombol untuk bertanding.</p>
-            <button class="btn-start" onclick="mulaiPermainanNyata()">START GAME</button>
-        </div>
-    </div>
+   <div id="start-overlay"> 
+  
+   </div>
     
   <div id="gameover-overlay" style="display: none;">
     <div class="gameover-content">
@@ -118,28 +125,41 @@
         <div id="taunt-text" class="taunt-style">Aduh... Otakmu perlu diservis! 🤫</div>
         
         <div id="area-tombol-gameover">
-            <button id="btn-aksi-gameover" class="btn-rematch" onclick="resetGame()">MAIN LAGI</button>
+            <button id="btn-aksi-gameover"
+        class="btn-rematch"
+        onclick="rematchGame()">
+    MAIN LAGI
+</button>
+
         </div>
     </div>
 </div>
 
 </div>
-
+    <!-- timer bawah -->
 <div id="timer-wrapper-bottom">
     <div id="timer-white" class="timer-container">
         <span class="timer-label">⚪ PUTIH (KAMU)</span>
         <span id="clock-white">05:00</span>
     </div>
 </div>
-<div id="game-action-panel" style="display:none;">
-    <button onclick="pemicuMenyerah()" class="btn-reset">
-        🏳️ Menyerah
-    </button>
-</div>
-    
-   <div class="status-box" style="margin-top: 15px; text-align: center;">
+    <!-- status -->
+ <div class="status-box" style="margin-top: 15px; text-align: center;">
     <span id="status">Memuat game...</span>
 </div>
+<button id="btn-reset-board"
+        class="btn-reset"
+        onclick="restartBoardOnly()">
+    🔄 Mulai Ulang Papan
+</button>
+</div>
+
+<div id="game-action-panel" style="display:none;">
+    <button id="btn-ejek" class="kata-kata" onclick="ejekLawan()">
+        😈
+    </button>
+</div>
+<div id="balon-ejek" style="display:none;"></div>
 
 <button id="btn-menyerah"
         onclick="pemicuMenyerah()"
@@ -155,10 +175,8 @@
                cursor:pointer;">
     🏳️ Menyerah
 </button>
-    <button id="btn-reset-board" class="btn-reset hide-in-game" onclick="resetGame()" style="margin-top: 10px; width: 100%;">Mulai Ulang Papan</button>
+  
 </div>
-
-
 <audio id="gameBacksound" src="https://github.com/tempayanpapaya-coder/Sekak/raw/refs/heads/main/Aset/backsound.mp3" loop></audio>
 <script src="JS/Sekak.js"></script>
 </body>
