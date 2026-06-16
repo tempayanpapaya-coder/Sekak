@@ -1054,6 +1054,7 @@ function tolakTantangan(namaLawan) {
         
         // Sembunyikan untuk kondisi lainnya (AI, Puzzle, atau saat masih di Overlay Start)
         marqueeDuel.style.display = 'none';
+        resetBoard: 'none;'
     }
 
     // 1. Jalankan pemeriksaan setiap kali ada klik di tombol START GAME atau tombol REMATCH
