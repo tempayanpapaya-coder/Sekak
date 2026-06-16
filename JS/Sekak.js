@@ -1054,7 +1054,7 @@ function tolakTantangan(namaLawan) {
         
         // Sembunyikan untuk kondisi lainnya (AI, Puzzle, atau saat masih di Overlay Start)
         marqueeDuel.style.display = 'none';
-        resetBoard: 'none;'
+    
     }
 
     // 1. Jalankan pemeriksaan setiap kali ada klik di tombol START GAME atau tombol REMATCH
@@ -1414,6 +1414,7 @@ function restartBoardOnly() {
         .classList.remove("active-timer");
 
     statusEl.innerText = "Papan berhasil diulang. Klik bidak untuk mulai bermain.";
+    resetBoard: 'none;'
 }
 function rematchGame() {
 
