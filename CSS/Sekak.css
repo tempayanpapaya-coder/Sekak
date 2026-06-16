@@ -296,7 +296,7 @@ select{
 
     cursor:pointer;
 
-    color:white;
+    color:red;
 
     background:
         linear-gradient(
@@ -312,14 +312,13 @@ select{
 }
 
 .btn-start:hover{
-    transform:scale(1.05);
+    transform:scale(0.05);
 }
 /* =========================
    TOMBOL BESAR
 ========================= */
 
-.btn-start,
-.btn-reset,
+
 .btn-rematch{
     background:
     linear-gradient(180deg,#d78a20,#8d4b09);
@@ -348,10 +347,72 @@ select{
     0 0 20px orange;
 }
 
+#panel-aksi{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-top:10px;
+}
+#btn-reset-board,
+#btn-menyerah{
+    padding:6px 10px;
+    margin:4px;
+    border:none;
+    border-radius:8px;
+
+    background:#6b4423;
+    color:#f5e6c8;
+
+    font-size:12px;
+    font-weight:bold;
+
+    box-shadow:2px 2px 4px rgba(0,0,0,.3);
+
+    cursor:pointer;
+
+    transition:.2s;
+}
+
+#btn-reset-board:hover,
+#btn-menyerah:hover{
+    transform:translateY(-1px);
+}
+
+#btn-reset-board:active,
+#btn-menyerah:active{
+    transform:scale(.96);
+}
+#btn-reset-board,
+#btn-menyerah{
+    padding:6px 10px;
+    margin:4px;
+
+    background:linear-gradient(
+        180deg,
+        #8b5a2b,
+        #5c3820
+    );
+
+    color:#f8e7b5;
+
+    border:1px solid #c9a54c;
+    border-radius:8px;
+
+    font-size:12px;
+    font-weight:bold;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.15),
+        0 2px 4px rgba(0,0,0,.35);
+
+    cursor:pointer;
+}
 /* =========================
    TOMBOL KECIL (2 BIJI)
 ========================= */
-
+.btn-start,
 .btn-home-gaming{
     padding:8px 12px !important;
 
@@ -438,4 +499,58 @@ h1,h2,h3,h4{
         opacity:1;
         transform:translateY(0);
     }
+}
+
+#game-action-panel{
+    position:relative;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin-top:15px;
+}
+
+#btn-ejek{
+    width:50px;
+    height:50px;
+    border-radius:50%;
+    border:none;
+    cursor:pointer;
+    font-size:24px;
+}
+
+#balon-ejek{
+    display:none;
+
+    position:absolute;
+
+    bottom:60px;
+    left:50%;
+
+    transform:translateX(-50%);
+
+    background:#222;
+    color:white;
+
+    padding:10px 15px;
+
+    border-radius:15px;
+
+    white-space:nowrap;
+
+    z-index:999;
+}
+
+#balon-ejek::after{
+    content:"";
+
+    position:absolute;
+
+    bottom:-8px;
+    left:50%;
+
+    transform:translateX(-50%);
+
+    border-left:8px solid transparent;
+    border-right:8px solid transparent;
+    border-top:8px solid #222;
 }
