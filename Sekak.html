@@ -21,10 +21,7 @@
 <div class="game-container">
 
     <div id="auth-section" class="hide-in-game" style="padding: 15px; background: #222; color: #fff; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-       <button onclick="kembaliKeHome()" style="padding: 15px; background: #222; color: #fff;" class="btn-home-gaming">
-    <span class="btn-home-icon">🏠</span> 
-    <span class="btn-home-text">Kembali ke Lobby</span>
-</button>
+     
 
         <span id="user-aktif-teks" style="font-weight: bold; color: #00f2fe;">Status: Memuat sesi...</span>
     </div>
@@ -104,6 +101,13 @@
      
     <div id="arena-pertandingan" style="display:none;">
 
+<div id="game-action-panel" style="display:none;">
+    <button id="btn-ejek" class="kata-kata" onclick="ejekLawan()">
+        😈
+    </button>
+    <div id="balon-ejek"></div>
+</div>
+
     <!-- timer atas -->
 <div id="timer-wrapper-top">
     <div id="timer-black" class="timer-container">
@@ -122,16 +126,7 @@
   <div id="gameover-overlay" style="display: none;">
     <div class="gameover-content">
         <div class="skakmat-animation">GAMEOVER!</div>
-        <div id="taunt-text" class="taunt-style">Aduh... Otakmu perlu diservis! 🤫</div>
-        
-        <div id="area-tombol-gameover">
-            <button id="btn-aksi-gameover"
-        class="btn-rematch"
-        onclick="rematchGame()">
-    MAIN LAGI
-</button>
-
-        </div>
+        <div id="taunt-text" class="taunt-style">Aduh... Sepertinya Harus banyak berlatih denganku</div>
     </div>
 </div>
 
@@ -147,37 +142,34 @@
  <div class="status-box" style="margin-top: 15px; text-align: center;">
     <span id="status">Memuat game...</span>
 </div>
-<button id="btn-reset-board"
-        class="btn-reset"
-        onclick="restartBoardOnly()">
-    🔄 Mulai Ulang Papan
-</button>
 </div>
 
-<div id="game-action-panel" style="display:none;">
-    <button id="btn-ejek" class="kata-kata" onclick="ejekLawan()">
-        😈
+<div id="panel-aksi">
+
+    <button id="btn-reset-board"
+            class="btn-reset"
+            onclick="restartBoardOnly()"
+            style="display:none;">
+        🔄 Mulai Ulang Papan
     </button>
-</div>
-<div id="balon-ejek" style="display:none;"></div>
 
-<button id="btn-menyerah"
-        onclick="pemicuMenyerah()"
-        style="display:none;
-               width:100%;
-               margin-top:10px;
-               background:#dc2626;
-               color:white;
-               border:none;
-               padding:12px;
-               border-radius:8px;
-               font-weight:bold;
-               cursor:pointer;">
-    🏳️ Menyerah
-</button>
-  
+    <button id="btn-menyerah"
+            onclick="pemicuMenyerah()"
+            style="display:none;">
+        🏳️ Menyerah
+    </button>
+
+    <button onclick="kembaliKeHome()"
+            class="btn-home-gaming">
+        <span class="btn-home-icon">🏠</span>
+        <span class="btn-home-text">Kembali ke Lobby</span>
+    </button>
+
 </div>
-<audio id="gameBacksound" src="https://github.com/tempayanpapaya-coder/Sekak/raw/refs/heads/main/Aset/backsound.mp3" loop></audio>
+
+</div>
+<audio id="gameBacksound" src="https://github.com/nguantukbanget84-sys/silsilah-audio/raw/refs/heads/main/Yen%20ing%20tawang.mp3" loop></audio>
+
 <script src="JS/Sekak.js"></script>
 </body>
 
