@@ -548,6 +548,7 @@ if (btnMenyerah) {
 }
 
 function mulaiPermainanNyata() {
+  document.getElementById("game-action-panel").style.display = "flex";
   document.getElementById("arena-pertandingan").style.display = "block";
 document.getElementById("panel-start").style.display = "none";
 
@@ -1420,6 +1421,7 @@ function rematchGame() {
     restartBoardOnly();
 
 }
+
 const daftarEjekan = [
     "🙂 Semangat ya.",
     "😏 Masih bisa dibalik kok.",
