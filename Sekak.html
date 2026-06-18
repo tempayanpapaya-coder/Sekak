@@ -4,68 +4,88 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sekak Jowo</title>
-    
+
+    <!-- Library Catur -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
-    <link rel="stylesheet" href="CSS/Sekak.css">
-    
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-     
+
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <!-- CSS Game -->
+    <link rel="stylesheet" href="CSS/Sekak.css">
     <link rel="manifest" href="manifest.json">
 </head>
 <body>
 
+<!-- ╔══════════════════════════════════════════╗
+     ║           CONTAINER UTAMA LOBBY          ║
+     ╚══════════════════════════════════════════╝ -->
 <div class="game-container">
 
-    <div id="auth-section" class="hide-in-game" style="padding: 15px; background: #222; color: #fff; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-     
-
-        <span id="user-aktif-teks" style="font-weight: bold; color: #00f2fe;">Status: Memuat sesi...</span>
+    <!-- ── STATUS & AUTH ── -->
+    <div id="auth-section" class="hide-in-game">
+        <span id="user-aktif-teks">Status: Memuat sesi...</span>
     </div>
-    <div id="box-user-profile" class="hide-in-game" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span id="info-pemain-aktif" style="font-size: 14px; color: #fff;">⌛ Memuat profil pemain online...</span>
-            
-            <button onclick="bukaModalEditProfil()" style="margin-top:0; background: #734114; color:#00f2fe; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom:5px;">
-                ✏️ EDIT NAMA
-            </button>
+
+    <!-- ── PROFIL PEMAIN ── -->
+    <div id="box-user-profile" class="hide-in-game">
+        <div class="profil-row">
+            <span id="info-pemain-aktif">⌛ Memuat profil...</span>
+            <button onclick="bukaModalEditProfil()" class="btn-edit-nama">✏️ EDIT NAMA</button>
         </div>
     </div>
-    
-    <div class="tombol-start" id="panel-start">
-    <h1>READY?</h1>
 
-    <button class="btn-start"
-            onclick="mulaiPermainanNyata()">
-        START GAME
-    </button>
-</div>
-    
+    <!-- ── PANEL START ── -->
+    <div class="tombol-start" id="panel-start">
+        <h1>READY?</h1>
+        <button class="btn-start" onclick="mulaiPermainanNyata()">START GAME</button>
+    </div>
+
+    <!-- ── NOTIFIKASI TANTANGAN (sistem lama, tetap ada sebagai fallback) ── -->
     <div id="notifikasi-tantangan"></div>
 
+    <!-- ╔══════════════════════════════════════════╗
+         ║              LOBBY PANEL                 ║
+         ║  Berisi tombol BUAT ROOM (di-inject JS)  ║
+         ╚══════════════════════════════════════════╝ -->
     <div id="lobby-panel" class="hide-in-game">
-        <h4 style="margin-top:0; color:#00f2fe; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom:5px;">👥 Pemain Lain di Lobby</h4>
+        <h4 class="lobby-judul">👥 Pemain Online</h4>
+
+        <!--
+            PENTING: div kosong ini adalah tempat tombol
+            "BUAT ROOM BARU" di-inject otomatis oleh JS
+            (_tampilTombolBuatRoom) saat mode = friend.
+            Jangan dihapus.
+        -->
+
         <div id="daftar-pemain-online">
-            <p style="color:#aaa; font-size:13px; font-style:italic;">Mencari pemain...</p>
+            <p class="teks-loading">Mencari pemain...</p>
         </div>
     </div>
-    
+
+    <!-- ── MENU SETTING ── -->
     <div class="menu-panel hide-in-game">
+
+        <!-- Mode Permainan -->
         <div class="menu-row">
             <label for="gameMode">Mode Permainan:</label>
-            <select id="gameMode" onchange="resetGame()">
+            <select id="gameMode" onchange="resetGame(); daftarkanDiriKeLobby();">
                 <option value="ai" selected>VS COM (AI)</option>
                 <option value="friend">Vs Teman (Online)</option>
                 <option value="puzzle">Mode 5 Langkah Mati!</option>
             </select>
-             <div id="puzzle-counter-box" style="display: none; background: #b91c1c; color: white; padding: 6px; border-radius: 4px; margin-bottom: 10px; font-weight: bold; font-size: 0.9rem; text-align: center;">
-        ⚠️ SISA JATAH LANGKAH MU: <span id="sisa-langkah">5</span> KALI LAGI!
-    </div>
+
+            <!-- Counter puzzle -->
+            <div id="puzzle-counter-box" style="display:none;">
+                ⚠️ SISA JATAH LANGKAH MU: <span id="sisa-langkah">5</span> KALI LAGI!
+            </div>
         </div>
-        
+
+        <!-- Level AI -->
         <div class="menu-row" id="difficultyRow">
             <label for="aiLevel">Tingkat Kesulitan AI:</label>
             <select id="aiLevel">
@@ -74,7 +94,8 @@
                 <option value="10">Prestasi / Master</option>
             </select>
         </div>
-        
+
+        <!-- Pilih Warna -->
         <div class="menu-row" id="playerColorRow">
             <label for="playerColor">Pilih Warna Bidak:</label>
             <select id="playerColor">
@@ -83,6 +104,7 @@
             </select>
         </div>
 
+        <!-- Durasi -->
         <div class="menu-row">
             <label for="timeLimit">Durasi Berpikir:</label>
             <select id="timeLimit" onchange="resetGame()">
@@ -92,98 +114,143 @@
             </select>
         </div>
     </div>
-    
-    <div id="marquee-duel" class="marquee-container" style="display: none;">
+
+    <!-- Marquee mode online -->
+    <div id="marquee-duel" class="marquee-container" style="display:none;">
         <div class="marquee-text">
             🔥 PERTARUNGAN HARGA DIRI! NO REMATCH! JIKA KALAH WAJIB BERBENAH! 🤜💥🤛 &nbsp;&nbsp;&nbsp;&nbsp;
         </div>
     </div>
-     
+
+    <!-- ╔══════════════════════════════════════════╗
+         ║            ARENA PERTANDINGAN            ║
+         ╚══════════════════════════════════════════╝ -->
     <div id="arena-pertandingan" style="display:none;">
 
-<div id="game-action-panel" style="display:none;">
-    <button id="btn-ejek" class="kata-kata" onclick="ejekLawan()">
-        😈
-    </button>
-    <div id="balon-ejek"></div>
-</div>
+        <!-- Tombol ejek -->
+        <div id="game-action-panel" style="display:none;">
+            <button id="btn-ejek" class="kata-kata" onclick="ejekLawan()">😈</button>
+            <div id="balon-ejek"></div>
+        </div>
 
-    <!-- timer atas -->
-<div id="timer-wrapper-top">
-    <div id="timer-black" class="timer-container">
-        <span class="timer-label">⚫ HITAM</span>
-        <span id="clock-black">05:00</span>
+        <!-- Timer atas (lawan) -->
+        <div id="timer-wrapper-top">
+            <div id="timer-black" class="timer-container">
+                <span class="timer-label">⚫ HITAM</span>
+                <span id="clock-black">05:00</span>
+            </div>
+        </div>
+
+        <!-- Board -->
+        <div class="board-wrapper">
+            <div id="board"></div>
+            <div id="start-overlay"></div>
+            <div id="gameover-overlay" style="display:none;">
+                <div class="gameover-content">
+                    <div class="skakmat-animation">GAMEOVER!</div>
+                    <div id="taunt-text" class="taunt-style">Aduh... Sepertinya Harus banyak berlatih denganku</div>
+                    <!-- Tombol rematch/lobby di sini di-inject oleh JS -->
+                    <div id="area-tombol-gameover" style="margin-top:16px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timer bawah (saya) -->
+        <div id="timer-wrapper-bottom">
+            <div id="timer-white" class="timer-container">
+                <span class="timer-label">⚪ PUTIH (KAMU)</span>
+                <span id="clock-white">05:00</span>
+            </div>
+        </div>
+
+        <!-- Status teks -->
+        <div class="status-box">
+            <span id="status">Memuat game...</span>
+        </div>
+
+    </div><!-- /arena-pertandingan -->
+
+    <!-- Tombol aksi bawah -->
+    <div id="panel-aksi">
+        <button id="btn-reset-board" class="btn-reset" onclick="restartBoardOnly()" style="display:none;">
+            🔄 Mulai Ulang Papan
+        </button>
+        <button id="btn-menyerah" onclick="pemicuMenyerah()" style="display:none;">
+            🏳️ Menyerah
+        </button>
+        <button onclick="kembaliKeHome()" class="btn-home-gaming">
+            <span class="btn-home-icon">🏠</span>
+            <span class="btn-home-text">Kembali ke Lobby</span>
+        </button>
     </div>
-</div>
-    <!-- board -->
-<div class="board-wrapper">
-    <div id="board"></div>
 
-   <div id="start-overlay"> 
-  
-   </div>
-    
-  <div id="gameover-overlay" style="display: none;">
-    <div class="gameover-content">
-        <div class="skakmat-animation">GAMEOVER!</div>
-        <div id="taunt-text" class="taunt-style">Aduh... Sepertinya Harus banyak berlatih denganku</div>
+</div><!-- /game-container -->
+
+<!-- Audio latar -->
+<audio id="gameBacksound"
+       src="https://github.com/nguantukbanget84-sys/silsilah-audio/raw/refs/heads/main/Yen%20ing%20tawang.mp3"
+       loop></audio>
+
+<!-- ╔══════════════════════════════════════════╗
+     ║         FULLSCREEN GAME LAYER            ║
+     ║  Muncul menutupi layar saat START diklik ║
+     ╚══════════════════════════════════════════╝ -->
+<div id="fullscreen-game-layer">
+
+    <!-- Tombol fullscreen pojok kanan atas -->
+    <button id="btn-fs-fullscreen"
+            onclick="document.fullscreenElement ? keluarFullscreen() : masukFullscreen()">
+        ⛶ Layar Penuh
+    </button>
+
+    <!-- Timer atas (lawan) -->
+    <div id="fs-timer-top" class="timer-container">
+        <span class="timer-label" id="fs-label-top">⚫ HITAM</span>
+        <span id="fs-clock-top">05:00</span>
     </div>
-</div>
 
-</div>
-    <!-- timer bawah -->
-<div id="timer-wrapper-bottom">
-    <div id="timer-white" class="timer-container">
-        <span class="timer-label">⚪ PUTIH (KAMU)</span>
-        <span id="clock-white">05:00</span>
+    <!-- Board fullscreen -->
+    <div id="fullscreen-board-wrap">
+        <div id="fs-board"></div>
+
+        <!-- Gameover overlay di dalam board fullscreen -->
+        <div id="fs-gameover-overlay">
+            <div class="skakmat-animation">GAMEOVER!</div>
+            <div id="fs-taunt-text" class="taunt-style"></div>
+        </div>
     </div>
-</div>
-    <!-- status -->
- <div class="status-box" style="margin-top: 15px; text-align: center;">
-    <span id="status">Memuat game...</span>
-</div>
-</div>
 
-<div id="panel-aksi">
+    <!-- Status -->
+    <div id="fullscreen-status">Memuat game...</div>
 
-    <button id="btn-reset-board"
-            class="btn-reset"
-            onclick="restartBoardOnly()"
-            style="display:none;">
-        🔄 Mulai Ulang Papan
-    </button>
+    <!-- Timer bawah (saya) -->
+    <div id="fs-timer-bottom" class="timer-container">
+        <span class="timer-label" id="fs-label-bottom">⚪ PUTIH (KAMU)</span>
+        <span id="fs-clock-bottom">05:00</span>
+    </div>
 
-    <button id="btn-menyerah"
-            onclick="pemicuMenyerah()"
-            style="display:none;">
-        🏳️ Menyerah
-    </button>
+    <!--
+        Hamburger menu di-inject otomatis oleh JS (injectHamburger).
+        Tidak perlu tulis tombol aksi di sini.
+    -->
 
-    <button onclick="kembaliKeHome()"
-            class="btn-home-gaming">
-        <span class="btn-home-icon">🏠</span>
-        <span class="btn-home-text">Kembali ke Lobby</span>
-    </button>
+</div><!-- /fullscreen-game-layer -->
 
-</div>
-
-</div>
-<audio id="gameBacksound" src="https://github.com/nguantukbanget84-sys/silsilah-audio/raw/refs/heads/main/Yen%20ing%20tawang.mp3" loop></audio>
-
-<button id="btn-toggle-audio" class="hide-in-game" onclick="toggleAudio()" style="position: fixed; top: 10px; right: 10px; z-index: 9999; background: #222533; color: white; border: 1px solid #444; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+<!-- ── TOMBOL FIXED (Audio & Fullscreen) ── -->
+<button id="btn-toggle-audio" class="hide-in-game btn-fixed-pojok" style="top:10px;" onclick="toggleAudio()">
     🔈 Mute Music
 </button>
+<button id="btn-toggle-fullscreen" class="hide-in-game btn-fixed-pojok" style="top:44px;"
+        onclick="document.fullscreenElement ? keluarFullscreen() : masukFullscreen()">
+    ⛶ Layar Penuh
+</button>
 
-
+<!-- ── SCRIPT (URUTAN WAJIB) ── -->
 <script src="JS/config.js"></script>
 <script src="JS/audio.js"></script>
 <script src="JS/game-engine.js"></script>
 <script src="JS/ui-control.js"></script>
 <script src="JS/firebase-online.js"></script>
 
-
-
 </body>
-
-
 </html>

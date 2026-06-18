@@ -4,134 +4,483 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sekak Jowo - Lobby Utama</title>
-    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#00f2fe">
-    
-    <link rel="stylesheet" href="CSS/Sekak.css">
-    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
 <style>
-body {
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
+/* ── BASE ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+body {
+    min-height: 100vh;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #0f1117;
     background-image: url("https://raw.githubusercontent.com/tempayanpapaya-coder/Sekak/refs/heads/main/Aset/Background1.png");
     background-size: cover;
     background-position: center;
-    background-repeat: no-repeat;
     background-attachment: fixed;
-
-    font-family: Arial, sans-serif;
-}
-html, body {
-    width: 100%;
-    height: 100%;
-    margin: 0;
+    color: #fff;
 }
 
+/* overlay gelap di atas background */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 11, 20, 0.72);
+    z-index: 0;
+}
 
-.lobby-container {
-    max-width: 500px;
-    margin: 80px auto;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 30px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
+.page-wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+}
+
+/* ── HEADER ── */
+.header {
     text-align: center;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    padding: 28px 0 20px;
 }
 
-.pesanAnak {
-    max-width: 500px;
-    margin: 80px auto;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 30px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    text-align: center;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-}
+.header-logo { font-size: 48px; margin-bottom: 6px; }
 
-h1 {
+.header h1 {
     font-size: 28px;
-    margin-bottom: 5px;
-    background: linear-gradient(45deg, #00f2fe, #4facfe);
+    font-weight: 900;
+    letter-spacing: 3px;
+    background: linear-gradient(90deg, #00f2fe, #4facfe);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    margin-bottom: 4px;
 }
-.subtitle {
+
+.header .tagline {
     color: #aaa;
-    font-size: 14px;
-    margin-bottom: 25px;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
+
+/* ── CARD ── */
+.card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 14px;
+    backdrop-filter: blur(12px);
+}
+
+.card-judul {
+    font-size: 12px;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ── FORM LOGIN ── */
+#seksi-login { text-align: center; }
+
+#seksi-login h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: #fff;
+}
+
+#seksi-login p {
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 18px;
+}
+
 input[type="text"] {
     width: 100%;
-    padding: 12px 20px;
-    margin-bottom: 20px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
-    color: white;
-    font-size: 16px;
-    box-sizing: border-box;
-    transition: 0.3s;
+    padding: 12px 16px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 15px;
+    margin-bottom: 12px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 input[type="text"]:focus {
     border-color: #00f2fe;
-    outline: none;
-    box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
+    box-shadow: 0 0 10px rgba(0,242,254,0.2);
 }
+input[type="text"]:disabled {
+    background: #1a1d2e;
+    color: #aaa;
+    cursor: not-allowed;
+}
+
 .btn-masuk {
     width: 100%;
-    padding: 12px;
-    background: linear-gradient(45deg, #00f2fe, #4facfe);
+    padding: 13px;
+    background: linear-gradient(135deg, #00f2fe, #4facfe);
     border: none;
-    border-radius: 6px;
-    color: white;
+    border-radius: 8px;
+    color: #000;
     font-size: 16px;
-    font-weight: bold;
+    font-weight: 900;
+    letter-spacing: 1px;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
-    transition: 0.3s;
+    box-shadow: 0 4px 20px rgba(0,242,254,0.3);
+    transition: transform 0.15s, box-shadow 0.15s;
 }
-.btn-masuk:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 242, 254, 0.5);
+.btn-masuk:hover  { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,242,254,0.45); }
+.btn-masuk:active { transform: translateY(0); }
+
+/* ── INFO AKUN TERKUNCI ── */
+#info-akun-terkunci {
+    display: none;
+    background: rgba(0,242,254,0.07);
+    border: 1px solid rgba(0,242,254,0.2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 12px;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+#info-akun-terkunci b { color: #00f2fe; }
+.btn-ganti-akun {
+    background: transparent;
+    color: #ef4444;
+    border: 1px solid rgba(239,68,68,0.4);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+/* ── PANEL PILIH MODE (muncul setelah login) ── */
+#seksi-mode { display: none; }
+
+.sambutan {
+    text-align: center;
+    margin-bottom: 16px;
+}
+.sambutan .nama-pemain {
+    font-size: 22px;
+    font-weight: 900;
+    color: #00f2fe;
+}
+.sambutan p { font-size: 13px; color: #aaa; margin-top: 2px; }
+
+.grid-mode {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.btn-mode {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 16px 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    color: #fff;
+}
+.btn-mode:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+.btn-mode:active { transform: translateY(0); }
+
+.btn-mode .ikon   { font-size: 28px; margin-bottom: 6px; }
+.btn-mode .label  { font-size: 13px; font-weight: 700; display: block; margin-bottom: 2px; }
+.btn-mode .sublabel { font-size: 11px; color: #aaa; display: block; }
+
+/* Warna aksen per mode */
+.btn-mode.vs-ai     { border-color: rgba(0,184,148,0.4); }
+.btn-mode.vs-ai:hover { border-color: #00b894; background: rgba(0,184,148,0.1); }
+
+.btn-mode.vs-teman  { border-color: rgba(0,242,254,0.4); }
+.btn-mode.vs-teman:hover { border-color: #00f2fe; background: rgba(0,242,254,0.1); }
+
+.btn-mode.puzzle    { grid-column: span 2; border-color: rgba(255,159,67,0.4); }
+.btn-mode.puzzle:hover { border-color: #ff9f43; background: rgba(255,159,67,0.1); }
+
+.btn-logout {
+    width: 100%;
+    background: transparent;
+    color: #aaa;
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 9px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: color 0.2s, border-color 0.2s;
+}
+.btn-logout:hover { color: #ef4444; border-color: rgba(239,68,68,0.4); }
+
+/* ── LIVE MATCHES ── */
+#seksi-live .card-judul { color: #ff9f43; }
+
+.room-item {
+    background: #1a1d2e;
+    border: 1px solid #2d3246;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    transition: border-color 0.2s;
+}
+.room-item:hover { border-color: rgba(255,159,67,0.4); }
+.room-item:last-child { margin-bottom: 0; }
+
+.room-pemain { flex: 1; min-width: 0; }
+
+.room-vs-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.room-nama {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+}
+
+.room-vs-badge {
+    font-size: 9px;
+    font-weight: 900;
+    color: #ff9f43;
+    background: rgba(255,159,67,0.15);
+    border: 1px solid rgba(255,159,67,0.3);
+    padding: 1px 6px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+}
+
+.room-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+
+.badge-live {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #ef4444;
+    letter-spacing: 0.5px;
+}
+.dot-live {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #ef4444;
+    animation: denyut 1s infinite;
+}
+@keyframes denyut { 0%,100%{opacity:1}50%{opacity:0.3} }
+
+.badge-penonton {
+    font-size: 10px;
+    color: #aaa;
+}
+
+.badge-selesai {
+    font-size: 10px;
+    font-weight: 700;
+    color: #39ff14;
+}
+
+.room-timer {
+    font-size: 11px;
+    color: #aaa;
+    font-family: 'Courier New', monospace;
+}
+
+.btn-tonton {
+    background: #ff9f43;
+    color: #000;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: opacity 0.2s, transform 0.15s;
+}
+.btn-tonton:hover  { opacity: 0.85; transform: translateY(-1px); }
+.btn-tonton.selesai {
+    background: #374151;
+    color: #aaa;
+}
+
+.teks-kosong {
+    text-align: center;
+    color: #aaa;
+    font-size: 13px;
+    font-style: italic;
+    padding: 16px 0;
+}
+
+/* ── MARQUEE ── */
+.marquee-wrap {
+    overflow: hidden;
+    background: rgba(255,100,0,0.07);
+    border: 1px solid rgba(255,159,67,0.2);
+    border-radius: 8px;
+    padding: 8px 0;
+    margin-bottom: 14px;
+}
+.marquee-teks {
+    display: inline-block;
+    white-space: nowrap;
+    color: #ff9f43;
+    font-size: 13px;
+    font-weight: 700;
+    animation: lari 14s linear infinite;
+}
+@keyframes lari {
+    from { transform: translateX(100vw); }
+    to   { transform: translateX(-100%); }
+}
+
+/* ── TOAST NOTIFIKASI ── */
+#toast {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1d2e;
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 9999;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    white-space: nowrap;
 }
 </style>
 </head>
 <body>
+<div class="page-wrap">
 
-<div class="lobby-container">
-    <h1>♟️ SEKAK JOWO</h1>
-    <div class="subtitle">Sistem Registrasi Akun & Lobby Catur Online</div>
-    
-    <input type="text" id="input-nama-pemain" placeholder="Masukkan Nama / Username Kamu..." autocomplete="off">
-    <button class="btn-masuk" onclick="prosesLoginOtomatis()">MASUK KE PERMAINAN</button>
-</div>
-
-<div class="live-matches-container" style="margin-top: 30px; background: #151722; padding: 20px; border-radius: 8px; color: #fff; max-width: 400px; margin-left: auto; margin-right: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
-    <h3 style="color: #ff9f43; margin-top: 0; font-size: 16px; border-bottom: 1px solid #2d3246; padding-bottom: 8px; text-align: center;">
-        🔥 PERTANDINGAN LIVE (SEDANG BERLANGSUNG)
-    </h3>
-    
-    <div id="daftar-room-aktif">
-        <p style="color: #aaa; font-size: 13px; font-style: italic; text-align: center;">Mencari pertandingan aktif...</p>
+    <!-- ── HEADER ── -->
+    <div class="header">
+        <div class="header-logo">♟️</div>
+        <h1>SEKAK JOWO</h1>
+        <p class="tagline">Catur Online Berbasis Jawa</p>
     </div>
-</div>
 
+    <!-- ── MARQUEE ── -->
+    <div class="marquee-wrap">
+        <span class="marquee-teks">
+            ⚔️ Pertarungan Harga Diri &nbsp;•&nbsp; Yang Kalah Wajib Berbenah &nbsp;•&nbsp; NO REMATCH TANPA IZIN &nbsp;•&nbsp; 🔥 Main Sekarang! &nbsp;&nbsp;&nbsp;&nbsp;
+        </span>
+    </div>
 
-<marquee class="pesanAnak" > Pertarungan Harga diri, yang kalah Pindah AGAMA</marquee>
+    <!-- ╔═══════════════════════════════╗
+         ║        SEKSI LOGIN            ║
+         ╚═══════════════════════════════╝ -->
+    <div class="card" id="seksi-login">
+        <h2>Masuk ke Arena</h2>
+        <p>Gunakan nama yang sama setiap sesi agar record-mu tersimpan.</p>
+
+        <!-- Info akun terkunci -->
+        <div id="info-akun-terkunci">
+            <span>Perangkat ini terkunci untuk: <b id="teks-nama-terkunci"></b></span>
+            <button class="btn-ganti-akun" onclick="resetAkun()">Ganti Akun</button>
+        </div>
+
+        <input type="text" id="input-nama-pemain"
+               placeholder="Nama / Username kamu..."
+               autocomplete="off"
+               onkeydown="if(event.key==='Enter') prosesLogin()">
+
+        <button class="btn-masuk" onclick="prosesLogin()">MASUK KE LOBBY →</button>
+    </div>
+
+    <!-- ╔═══════════════════════════════╗
+         ║      SEKSI PILIH MODE         ║
+         ║  (muncul setelah login)       ║
+         ╚═══════════════════════════════╝ -->
+    <div class="card" id="seksi-mode">
+        <div class="sambutan">
+            <div class="nama-pemain" id="teks-sambutan">—</div>
+            <p>Pilih mode permainan:</p>
+        </div>
+
+        <div class="grid-mode">
+            <!-- VS AI -->
+            <div class="btn-mode vs-ai" onclick="masukGame('ai')">
+                <div class="ikon">🤖</div>
+                <span class="label">VS Komputer</span>
+                <span class="sublabel">Solo, offline</span>
+            </div>
+
+            <!-- VS TEMAN -->
+            <div class="btn-mode vs-teman" onclick="masukGame('friend')">
+                <div class="ikon">⚔️</div>
+                <span class="label">VS Teman</span>
+                <span class="sublabel">Buat / join room</span>
+            </div>
+
+            <!-- PUZZLE -->
+            <div class="btn-mode puzzle" onclick="masukGame('puzzle')">
+                <div class="ikon">🧩</div>
+                <span class="label">Mode Puzzle</span>
+                <span class="sublabel">Habisi lawan dalam 5 langkah mati!</span>
+            </div>
+        </div>
+
+        <button class="btn-logout" onclick="logout()">↩ Ganti Akun / Logout</button>
+    </div>
+
+    <!-- ╔═══════════════════════════════╗
+         ║      LIVE MATCHES             ║
+         ╚═══════════════════════════════╝ -->
+    <div class="card" id="seksi-live">
+        <div class="card-judul">🔥 Pertandingan Live</div>
+        <div id="daftar-room-aktif">
+            <p class="teks-kosong">Memuat pertandingan...</p>
+        </div>
+    </div>
+
+</div><!-- /page-wrap -->
+
+<!-- Toast -->
+<div id="toast"></div>
+
 <script>
-// =============================================================================
-// CONFIG FIREBASE (SINKRON DENGAN SEKAK.JS)
-// =============================================================================
+// ── FIREBASE ──
 const firebaseConfig = {
     apiKey: "AIzaSyATIQKEoacfqd_P5mBn915gzwbsLQE-va8",
     authDomain: "spp-unisri-taekwondo.firebaseapp.com",
@@ -143,173 +492,272 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// =============================================================================
-// FUNGSI LOGIK LOGIN & REDIRECT OTOMATIS
-// =============================================================================
-function prosesLoginOtomatis() {
-    const namaInput = document.getElementById('input-nama-pemain').value.trim();
+// ── STATE ──
+let usernameSaya = "";
 
-    // Validasi input kosong
-    if (namaInput === "") {
-        alert("Nama tidak boleh kosong! Silakan masukkan nama kamu.");
+// ── TOAST ──
+function tampilToast(pesan, durasi = 2500) {
+    const el = document.getElementById('toast');
+    el.textContent = pesan;
+    el.style.display = 'block';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.style.display = 'none'; }, durasi);
+}
+
+// ── FORMAT WAKTU ──
+function formatDetik(detik) {
+    if (!detik && detik !== 0) return '--:--';
+    detik = Math.max(0, Math.floor(detik));
+    const m = Math.floor(detik / 60).toString().padStart(2,'0');
+    const s = (detik % 60).toString().padStart(2,'0');
+    return m + ':' + s;
+}
+
+// ╔═══════════════════════════════╗
+// ║           LOGIN               ║
+// ╚═══════════════════════════════╝
+function prosesLogin() {
+    const input = document.getElementById('input-nama-pemain');
+    const nama  = input.value.trim();
+
+    if (!nama) { tampilToast('⚠️ Nama tidak boleh kosong!'); return; }
+    if (nama.length > 15) { tampilToast('⚠️ Nama maksimal 15 karakter!'); return; }
+
+    const akunTerkunci = localStorage.getItem('akun_device_ini');
+    if (akunTerkunci && nama !== akunTerkunci) {
+        tampilToast('🔒 Perangkat ini terkunci untuk: ' + akunTerkunci, 3500);
         return;
     }
 
-    const akunTerkunci = localStorage.getItem("akun_device_ini");
+    // Simpan ke localStorage & sessionStorage
+    localStorage.setItem('akun_device_ini', nama);
+    sessionStorage.setItem('catur_username', nama);
+    sessionStorage.setItem('catur_peran', 'w');
+    sessionStorage.setItem('catur_room_id', '');
+    usernameSaya = nama;
 
-    if (akunTerkunci) {
-
-        if (namaInput !== akunTerkunci) {
-            alert(`⚠️ AKSES DITOLAK!\nPerangkat ini sudah dikunci untuk akun: "${akunTerkunci}".\nAnda tidak bisa menggunakan nama lain di HP/Device ini!`);
-            return; // 🛑 STOP! Gagalkan proses login, tidak lanjut ke Firebase
-        }
-    } else {
-        localStorage.setItem("akun_device_ini", namaInput);
-    }
-
-    sessionStorage.setItem("catur_username", namaInput);
-    sessionStorage.setItem("catur_peran", "w"); // Default peran awal sebagai Putih
-    sessionStorage.setItem("catur_room_id", "");  // Belum ada room sebelum membuat/menerima tantangan
-
-    // 2. Daftarkan status online pemain ke database Firestore secara realtime
-    db.collection("para_pemain").doc(namaInput).set({
-        status: "di_lobby", // Menandakan pemain siap di-lobby online
-        lawan: "",
-        roomId: "",
+    // Daftar ke Firebase sebagai online
+    db.collection('para_pemain').doc(nama).set({
+        nama:       nama,
+        status:     'di_lobby',
+        lawan:      '',
+        roomId:     '',
         waktuLogin: firebase.firestore.FieldValue.serverTimestamp()
-    })
-    .then(() => {
-        console.log("Pendaftaran Akun Berhasil!");
-        
-        // 3. SEHARUSNYA OTOMATIS REDIRECT: Pindahkan pemain langsung ke arena game catur
-        window.location.href = "Sekak.html?mode=ai";
-    })
-    .catch((error) => {
-        console.error("Gagal mendaftarkan akun: ", error);
-        alert("Terjadi kesalahan jaringan database. Silakan coba lagi.");
-    });
+    }).catch(err => console.warn('Gagal daftar Firebase:', err));
+
+    tampilSeksiMode(nama);
 }
 
-// Otomatis deteksi akun saat halaman index dimuat
-document.addEventListener("DOMContentLoaded", function() {
-    const akunTerkunci = localStorage.getItem("akun_device_ini");
-    const inputNama = document.getElementById('input-nama-pemain');
+function tampilSeksiMode(nama) {
+    document.getElementById('seksi-login').style.display = 'none';
+    document.getElementById('seksi-mode').style.display  = 'block';
+    document.getElementById('teks-sambutan').textContent  = '👋 Halo, ' + nama + '!';
+}
 
-    if (akunTerkunci && inputNama) {
-        inputNama.value = akunTerkunci; // Masukkan nama yang terkunci otomatis
-        inputNama.disabled = true;      // Matikan inputnya agar tidak bisa diketik ulang
-        inputNama.style.background = "#222533"; // Efek visual terkunci (opsional)
-        inputNama.style.color = "#aaa";
+function logout() {
+    if (!confirm('Yakin ingin ganti akun?')) return;
+    resetAkun();
+}
+
+function resetAkun() {
+    localStorage.removeItem('akun_device_ini');
+    sessionStorage.clear();
+    usernameSaya = '';
+    document.getElementById('seksi-mode').style.display  = 'none';
+    document.getElementById('seksi-login').style.display = 'block';
+    const input = document.getElementById('input-nama-pemain');
+    input.value    = '';
+    input.disabled = false;
+    input.style.background = '';
+    input.style.color      = '';
+    document.getElementById('info-akun-terkunci').style.display = 'none';
+}
+
+// ╔═══════════════════════════════╗
+// ║         MASUK GAME            ║
+// ╚═══════════════════════════════╝
+function masukGame(mode) {
+    // Bersihkan room lama agar tidak reconnect ke room orang lain
+    sessionStorage.setItem('catur_room_id', '');
+    sessionStorage.setItem('catur_peran', 'w');
+    window.location.href = 'Sekak.html?mode=' + mode;
+}
+
+// ╔═══════════════════════════════╗
+// ║    TONTON PERTANDINGAN        ║
+// ╚═══════════════════════════════╝
+function tontonPertandingan(idKamar) {
+    sessionStorage.setItem('catur_room_id', idKamar);
+    sessionStorage.setItem('catur_peran',   'viewer');
+
+    if (!sessionStorage.getItem('catur_username')) {
+        const namaViewer = 'Penonton_' + Math.floor(1000 + Math.random() * 9000);
+        sessionStorage.setItem('catur_username', namaViewer);
     }
-});
 
-// --- SCRIPT REALTIME MONITORING LIVE MATCHES ---
-document.addEventListener("DOMContentLoaded", function() {
-    // Jalankan fungsi pemantau room aktif
-    pantauPertandinganLive();
-});
+    tampilToast('👁️ Masuk mode penonton...');
+    setTimeout(() => {
+        window.location.href = 'Sekak.html?mode=friend&room=' + idKamar;
+    }, 800);
+}
+
+// ╔═══════════════════════════════╗
+// ║      LIVE MATCHES (REALTIME)  ║
+// ╚═══════════════════════════════╝
+
+// Simpan data waktu per room untuk hitung timer live
+const cacheTimerRoom = {};
 
 function pantauPertandinganLive() {
-    console.log("Memulai pemantauan pertandingan aktif...");
-    
-    db.collection("room_catur").onSnapshot((snapshot) => {
-        const areaDaftarRoom = document.getElementById('daftar-room-aktif');
-        if (!areaDaftarRoom) return;
+    db.collection('room_catur').onSnapshot(snapshot => {
+        const area = document.getElementById('daftar-room-aktif');
+        if (!area) return;
 
-        areaDaftarRoom.innerHTML = ""; 
+        area.innerHTML = '';
 
         if (snapshot.empty) {
-            areaDaftarRoom.innerHTML = `<p style="color:#aaa; font-size:13px; font-style: italic; text-align:center;">📭 Saat ini tidak ada pertandingan aktif.</p>`;
+            area.innerHTML = '<p class="teks-kosong">📭 Belum ada pertandingan aktif.</p>';
             return;
         }
 
-        snapshot.forEach((doc) => {
-            const roomIdAktif = doc.id;
-            const dataRoom = doc.data();
-            
-            let namaPutih = "Pemain 1";
-            let namaHitam = "Pemain 2";
-            
-            if (roomIdAktif.includes("_vs_")) {
-                let bagian = roomIdAktif.split('_vs_');
-                if (bagian.length > 1) {
-                    namaPutih = bagian[0].replace('room_', '');
-                    namaHitam = bagian[1].split('_')[0];
-                }
-            }
-
-            // 1. LOGIKA PERUBAHAN TEKS JIKA GAME TELAH SELESAI
-            let infoTeksPertandingan = "";
-            let infoTombolAksi = "";
-
-            if (dataRoom.statusGame === "selesai") {
-                // Tentukan siapa yang menang berdasarkan data Firebase
-                let teksPemenang = dataRoom.pemenang === "Putih" ? `${namaPutih} WIN 👑` : `${namaHitam} WIN 👑`;
-                
-                infoTeksPertandingan = `
-                    <span style="color:#aaa; font-size:13px;">⚪ ${namaPutih} vs ⚫ ${namaHitam}</span>
-                    <br><span style="color:#39ff14; font-weight:bold; font-size:12px; display:block; margin-top:4px;">🎉 ${teksPemenang}</span>
-                `;
-                
-                infoTombolAksi = `
-                    <button onclick="tontonPertandingan('${roomIdAktif}')" style="background:#555; color:white; border:none; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:11px; transition: 0.2s;">
-                        📜 LIHAT RIWAYAT
-                    </button>
-                `;
-            } else {
-                // Tampilan Normal jika game masih berjalan (sedang live)
-                infoTeksPertandingan = `
-                    <span style="color:#fff; font-weight:bold; font-size:13px;">⚪ ${namaPutih}</span> 
-                    <br><span style="color:#ff9f43; font-size:11px; font-weight:bold; display:block; margin:2px 0;">VS</span>
-                    <span style="color:#fff; font-weight:bold; font-size:13px;">⚫ ${namaHitam}</span>
-                `;
-                
-                infoTombolAksi = `
-                    <button onclick="tontonPertandingan('${roomIdAktif}')" style="background:#ff9f43; color:white; border:none; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:12px; transition: 0.2s;">
-                        👁️ TONTON
-                    </button>
-                `;
-            }
-
-            // Buat komponen HTML untuk list
-            const itemRoom = document.createElement('div');
-            itemRoom.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:#1f222f; padding:12px 15px; margin-bottom:10px; border-radius:6px; border:1px solid #2d3246;";
-
-            itemRoom.innerHTML = `
-                <div style="text-align: left; flex: 1; padding-right: 10px;">
-                    ${infoTeksPertandingan}
-                </div>
-                <div>
-                    ${infoTombolAksi}
-                </div>
-            `;
-
-            areaDaftarRoom.appendChild(itemRoom);
+        // Urutkan: berjalan dulu, lalu selesai
+        const docs = [];
+        snapshot.forEach(doc => docs.push({ id: doc.id, data: doc.data() }));
+        docs.sort((a, b) => {
+            const urutan = { berjalan: 0, menunggu: 1, selesai: 2 };
+            return (urutan[a.data.statusGame] ?? 1) - (urutan[b.data.statusGame] ?? 1);
         });
-    }, (error) => {
-        console.error("Error mendengarkan live matches: ", error);
+
+        docs.forEach(({ id: roomId, data }) => {
+            // ── Parsing nama pemain ──
+            let namaPutih = data.pemainPutih || '???';
+            let namaHitam = data.pemainHitam || '???';
+
+            // Fallback: parse dari room ID lama (format room_X_vs_Y_123)
+            if (namaPutih === '???' && roomId.includes('_vs_')) {
+                const bagian = roomId.split('_vs_');
+                namaPutih = bagian[0].replace('room_', '') || '???';
+                namaHitam = (bagian[1] || '').split('_')[0] || '???';
+            }
+
+            const selesai      = data.statusGame === 'selesai';
+            const menunggu     = data.statusGame === 'menunggu' || !data.pemainHitam;
+            const jumlahPenonton = (data.penonton || []).length;
+
+            // ── Cache timer ──
+            if (!cacheTimerRoom[roomId]) cacheTimerRoom[roomId] = {};
+            if (data.waktuPutih !== undefined) cacheTimerRoom[roomId].p = data.waktuPutih;
+            if (data.waktuHitam !== undefined) cacheTimerRoom[roomId].h = data.waktuHitam;
+            if (data.turn !== undefined)       cacheTimerRoom[roomId].giliran = data.turn;
+
+            // ── Badge status ──
+            let badgeHtml = '';
+            if (selesai) {
+                const pemenang = data.pemenang === 'Putih'
+                    ? '🏆 ' + namaPutih + ' menang'
+                    : '🏆 ' + namaHitam + ' menang';
+                badgeHtml = `<span class="badge-selesai">${pemenang}</span>`;
+            } else if (menunggu) {
+                badgeHtml = `<span class="badge-live" style="color:#ff9f43;">
+                    <span class="dot-live" style="background:#ff9f43;"></span> Menunggu lawan
+                </span>`;
+            } else {
+                badgeHtml = `
+                    <span class="badge-live">
+                        <span class="dot-live"></span> LIVE
+                    </span>
+                    ${jumlahPenonton > 0
+                        ? `<span class="badge-penonton">👁️ ${jumlahPenonton} menonton</span>`
+                        : ''}
+                `;
+            }
+
+            // ── Timer display ──
+            const timerHtml = (!selesai && !menunggu)
+                ? `<span class="room-timer" id="timer-${roomId}">
+                        ⚪ ${formatDetik(cacheTimerRoom[roomId].p)}
+                        &nbsp;|&nbsp;
+                        ⚫ ${formatDetik(cacheTimerRoom[roomId].h)}
+                   </span>`
+                : '';
+
+            // ── Tombol aksi ──
+            const tombolHtml = selesai
+                ? `<button class="btn-tonton selesai" disabled>✓ Selesai</button>`
+                : menunggu
+                    ? `<button class="btn-tonton" style="background:#6c5ce7;"
+                            onclick="tontonPertandingan('${roomId}')">Tunggu</button>`
+                    : `<button class="btn-tonton"
+                            onclick="tontonPertandingan('${roomId}')">👁️ Tonton</button>`;
+
+            // ── Render item ──
+            const item = document.createElement('div');
+            item.className = 'room-item';
+            item.id = 'room-item-' + roomId;
+            item.innerHTML = `
+                <div class="room-pemain">
+                    <div class="room-vs-row">
+                        <span class="room-nama" title="${namaPutih}">⚪ ${namaPutih}</span>
+                        <span class="room-vs-badge">VS</span>
+                        <span class="room-nama" title="${namaHitam}">⚫ ${namaHitam}</span>
+                    </div>
+                    <div class="room-meta">
+                        ${badgeHtml}
+                        ${timerHtml}
+                    </div>
+                </div>
+                <div>${tombolHtml}</div>
+            `;
+            area.appendChild(item);
+        });
+
+        // Mulai update timer live setiap detik
+        clearInterval(window._intervalTimerLive);
+        window._intervalTimerLive = setInterval(() => {
+            Object.keys(cacheTimerRoom).forEach(roomId => {
+                const el = document.getElementById('timer-' + roomId);
+                if (!el) return;
+                const c = cacheTimerRoom[roomId];
+                if (c.giliran === 'w' && c.p > 0) c.p--;
+                else if (c.giliran === 'b' && c.h > 0) c.h--;
+                el.innerHTML = `⚪ ${formatDetik(c.p)} &nbsp;|&nbsp; ⚫ ${formatDetik(c.h)}`;
+            });
+        }, 1000);
+
+    }, err => {
+        console.error('Gagal pantau live matches:', err);
     });
 }
 
+// ╔═══════════════════════════════╗
+// ║           INIT                ║
+// ╚═══════════════════════════════╝
+document.addEventListener('DOMContentLoaded', () => {
+    const akunTerkunci = localStorage.getItem('akun_device_ini');
+    const input        = document.getElementById('input-nama-pemain');
+    const infoKunci    = document.getElementById('info-akun-terkunci');
+    const teksKunci    = document.getElementById('teks-nama-terkunci');
 
-// Fungsi yang dipicu saat tombol 👁️ TONTON diklik
-function tontonPertandingan(idKamar) {
-    // Set identitas sebagai Penonton (Spectator) di Session Storage
-    sessionStorage.setItem("catur_room_id", idKamar);
-    sessionStorage.setItem("catur_peran", "viewer"); // Peran khusus penonton, bukan 'w' atau 'b'
-    
-    // Buat nama samaran penonton agar tidak bentrok dengan pemain asli
-    if (!sessionStorage.getItem("catur_username")) {
-        sessionStorage.setItem("catur_username", "Penonton_" + Math.floor(1000 + Math.random() * 9000));
+    if (akunTerkunci) {
+        // Tampilkan info akun terkunci, sembunyikan input manual
+        input.value    = akunTerkunci;
+        input.disabled = true;
+        infoKunci.style.display = 'flex';
+        teksKunci.textContent   = akunTerkunci;
+
+        // Auto-login langsung
+        usernameSaya = akunTerkunci;
+        sessionStorage.setItem('catur_username', akunTerkunci);
+        sessionStorage.setItem('catur_peran',    'w');
+        if (!sessionStorage.getItem('catur_room_id')) {
+            sessionStorage.setItem('catur_room_id', '');
+        }
+        tampilSeksiMode(akunTerkunci);
     }
 
-    alert("Masuk sebagai mode penonton. Anda tidak dapat menggerakkan bidak.");
-    
-    // Alihkan langsung ke halaman arena catur dengan parameter mode friend
-    window.location.href = "Sekak.html?mode=friend";
-}
-
+    // Mulai pantau live matches
+    pantauPertandinganLive();
+});
 </script>
-
 </body>
 </html>
