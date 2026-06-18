@@ -5,10 +5,10 @@
 
 // --- OBJEK SUARA ---
 const sfxMove      = new Audio("Aset/sounds/Move.mp3");
-const sfxCapture   = new Audio("assets/sounds/capture.mp3");
-const sfxCheck     = new Audio("assets/sounds/check.mp3");
+const sfxCapture   = new Audio("Aset/sounds/Capture.mp3");
+const sfxCheck     = new Audio("Aset/sounds/Check.mp3");
 const sfxCheckmate = new Audio("Aset/sounds/checkmate.mp3");
-const sfxClick     = new Audio("Aset/Sounds/click.mp3");
+const sfxClick     = new Audio("Aset/sounds/Click.mp3");
 
 /**
  * Putar efek suara dari awal.
