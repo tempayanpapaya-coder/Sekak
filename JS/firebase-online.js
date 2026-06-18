@@ -7,8 +7,8 @@
 
 /** Generate kode room unik */
 function generateKodeRoom() {
-    const huruf = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let kode = 'SEKAK-';
+    const huruf = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz23456789';
+    let kode = 'DRAGON-';
     for (let i = 0; i < 6; i++) {
         kode += huruf[Math.floor(Math.random() * huruf.length)];
     }
@@ -296,7 +296,7 @@ function salinLinkRoom() {
 function shareRoomLink(link) {
     if (navigator.share) {
         navigator.share({
-            title: 'Ayo main Sekak Jowo!',
+            title: 'Ayo sekak karo aku, wanibra?!',
             text:  usernameSaya + ' mengajakmu duel catur! Kode: ' + roomId,
             url:   link
         }).catch(() => {});
@@ -390,33 +390,13 @@ function aktifkanListenerRoom() {
             kotakAsal = null;
             hapusHighlight();
         }
-// ── 4. Game selesai / Ada yang menyerah ──
-if (data.statusGame === 'selesai') {
-    clearInterval(intervalJam); // Hentikan jam di kedua sisi
-    
-    // Jika ada keterangan menyerah dari lawan
-    if (data.keterangan && data.keterangan.includes("Menyerah")) {
-        const overlayGameOver = document.getElementById('gameover-overlay');
-        const tauntTextEl     = document.getElementById('taunt-text');
-        const areaTombol      = document.getElementById('area-tombol-gameover');
 
-        if (tauntTextEl) {
-            tauntTextEl.innerHTML = `🏳️ <b>PERTANDINGAN SELESAI!</b><br>${data.keterangan}.<br><span style='color:#39ff14;'>Pemenangnya adalah ${data.pemenang}!</span>`;
+        // ── 4. Game selesai → hapus room ──
+        if (data.statusGame === 'selesai') {
+            if (_listenerRoom) { _listenerRoom(); _listenerRoom = null; }
+            _hapusRoomDariFirebase();
         }
-        if (overlayGameOver) overlayGameOver.style.display = 'flex';
-        
-        // Sediakan tombol kembali ke lobby di overlay
-        if (areaTombol) {
-            areaTombol.innerHTML = `
-                <button class="btn-rematch" onclick="resetGame()">🔄 Main Lagi</button>
-                <button class="btn-rematch" style="margin-top:10px;background:#374151;" onclick="kembaliKeHome()">🏠 Kembali ke Lobby</button>
-            `;
-        }
-    }
-
-    // Matikan listener agar tidak terjadi loop, lalu hapus room setelah beberapa saat
-    if (_listenerRoom) { _listenerRoom(); _listenerRoom = null; }
-    _hapusRoomDariFirebase();
+    });
 }
 
 // ─── HAPUS ROOM SETELAH SELESAI ─────────────────────────────
