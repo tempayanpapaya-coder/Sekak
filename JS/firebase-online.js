@@ -327,7 +327,8 @@ function batalkanRoom() {
 
 // ─── LISTENER ROOM REALTIME ──────────────────────────────────
 
-let _listenerRoom = null;
+let _listenerRoom  = null;
+let _fenTerakhirDikirim = ''; // Lacak FEN terakhir yang KITA kirim sendiri
 
 function aktifkanListenerRoom() {
     if (!roomId) return;
@@ -344,18 +345,18 @@ function aktifkanListenerRoom() {
 
         const data = doc.data();
 
-        // Host: lawan masuk → mulai game
+        // ── 1. Host: deteksi lawan masuk → mulai game ──
         if (peranSaya === 'w' && data.pemainHitam && data.statusRoom === 'penuh') {
             const panel = document.getElementById('panel-tunggu-lawan');
             if (panel) {
                 panel.remove();
                 tampilNotifRoom(data.pemainHitam + ' bergabung! Game dimulai...', 'sukses');
                 setTimeout(() => mulaiPermainanNyata(), 800);
+                // Jangan return — biarkan cek sinkronisasi di bawah tetap jalan
             }
-            return;
         }
 
-        // Update jumlah penonton di panel tunggu
+        // ── 2. Update jumlah penonton di panel tunggu ──
         if (data.penonton && data.penonton.length > 0) {
             const elPenonton = document.getElementById('status-tunggu-lawan');
             if (elPenonton && data.statusRoom === 'menunggu') {
@@ -366,24 +367,56 @@ function aktifkanListenerRoom() {
             }
         }
 
-        // Sinkronisasi langkah untuk penonton & reconnect
-        if (data.fen && data.fen !== game.fen() && gameDimulai) {
+        // ── 3. Sinkronisasi langkah dari LAWAN ──
+        // Hanya proses jika:
+        // (a) game sudah dimulai
+        // (b) FEN dari Firebase berbeda dengan posisi board saat ini
+        // (c) FEN ini BUKAN yang baru saja kita kirim sendiri (cegah echo loop)
+        if (
+            gameDimulai &&
+            data.fen &&
+            data.fen !== game.fen() &&
+            data.fen !== _fenTerakhirDikirim
+        ) {
             game.load(data.fen);
             if (board) board.position(data.fen);
+
+            // Sinkronisasi waktu dari Firebase (nilai autoritatif dari server)
             if (data.waktuPutih !== undefined) waktuPutih = data.waktuPutih;
             if (data.waktuHitam !== undefined) waktuHitam = data.waktuHitam;
+
             tukarArahJam();
             updateStatus();
             kotakAsal = null;
             hapusHighlight();
         }
+// ── 4. Game selesai / Ada yang menyerah ──
+if (data.statusGame === 'selesai') {
+    clearInterval(intervalJam); // Hentikan jam di kedua sisi
+    
+    // Jika ada keterangan menyerah dari lawan
+    if (data.keterangan && data.keterangan.includes("Menyerah")) {
+        const overlayGameOver = document.getElementById('gameover-overlay');
+        const tauntTextEl     = document.getElementById('taunt-text');
+        const areaTombol      = document.getElementById('area-tombol-gameover');
 
-        // Game selesai → hapus room
-        if (data.statusGame === 'selesai') {
-            if (_listenerRoom) { _listenerRoom(); _listenerRoom = null; }
-            _hapusRoomDariFirebase();
+        if (tauntTextEl) {
+            tauntTextEl.innerHTML = `🏳️ <b>PERTANDINGAN SELESAI!</b><br>${data.keterangan}.<br><span style='color:#39ff14;'>Pemenangnya adalah ${data.pemenang}!</span>`;
         }
-    });
+        if (overlayGameOver) overlayGameOver.style.display = 'flex';
+        
+        // Sediakan tombol kembali ke lobby di overlay
+        if (areaTombol) {
+            areaTombol.innerHTML = `
+                <button class="btn-rematch" onclick="resetGame()">🔄 Main Lagi</button>
+                <button class="btn-rematch" style="margin-top:10px;background:#374151;" onclick="kembaliKeHome()">🏠 Kembali ke Lobby</button>
+            `;
+        }
+    }
+
+    // Matikan listener agar tidak terjadi loop, lalu hapus room setelah beberapa saat
+    if (_listenerRoom) { _listenerRoom(); _listenerRoom = null; }
+    _hapusRoomDariFirebase();
 }
 
 // ─── HAPUS ROOM SETELAH SELESAI ─────────────────────────────
@@ -405,14 +438,23 @@ function _hapusRoomDariFirebase() {
 
 function kirimLangkahKeFirebase() {
     if (!roomId) return;
+
+    const fenSekarang = game.fen();
+
+    // Catat FEN yang kita kirim sendiri agar listener tidak memproses echo-nya
+    _fenTerakhirDikirim = fenSekarang;
+
     db.collection('room_catur').doc(roomId).update({
-        fen:         game.fen(),
+        fen:         fenSekarang,
         turn:        game.turn(),
         waktuPutih:  waktuPutih,
         waktuHitam:  waktuHitam,
         statusGame:  game.game_over() ? 'selesai' : 'berjalan',
         waktuUpdate: firebase.firestore.FieldValue.serverTimestamp()
     }).catch(err => { console.error('Gagal kirim langkah:', err); });
+
+    // Putar timer di sisi pengirim langsung tanpa tunggu Firebase echo
+    tukarArahJam();
 }
 
 // ─── NOTIFIKASI TOAST ────────────────────────────────────────
