@@ -220,14 +220,16 @@ function rematchGame() {
 }
 
 // --- MENYERAH ---
-// --- MENYERAH ---
 function pemicuMenyerah() {
     putarSuara(sfxClick);
-    
+    if (!confirm("Yakin ingin menyerah?")) return;
+
     const mode = document.getElementById("gameMode").value;
 
+    // ── Mode AI ──
     if (mode === "ai") {
         clearInterval(intervalJam);
+        gameDimulai = false;
         document.getElementById('taunt-text').innerHTML =
             "🤖 Kamu menyerah.<br><span style='color:#ef4444'>AI dinyatakan menang!</span>";
         document.getElementById('gameover-overlay').style.display = 'flex';
@@ -237,32 +239,42 @@ function pemicuMenyerah() {
         return;
     }
 
+    // ── Mode Puzzle ──
     if (mode === "puzzle") { resetGame(); return; }
 
-    // Mode Friend (Online)
+    // ── Mode Online (friend) ──
     if (!roomId) { alert("Pertandingan tidak ditemukan."); return; }
-    if (!confirm("Apakah kamu yakin ingin menyerah dan mengakhiri pertandingan ini?")) return;
 
-    // Cari tahu siapa pemenangnya (jika saya menyerah, berarti lawan yang menang)
-    // Di room system, peranSaya adalah 'w' (Putih) atau 'b' (Hitam)
-    db.collection("room_catur").doc(roomId).get().then((doc) => {
-        if (!doc.exists) return;
-        const dataRoom = doc.data();
-        
-        // Tentukan nama pemenang berdasarkan siapa yang klik menyerah
-        const namaPemenang = (peranSaya === 'w') ? (dataRoom.pemainHitam || "Hitam") : (dataRoom.pemainPutih || "Putih");
+    // Ambil nama lawan dari Firebase — lebih andal dari parse roomId
+    db.collection("room_catur").doc(roomId).get().then(doc => {
+        if (!doc.exists) { alert("Room tidak ditemukan."); return; }
 
-        // Update ke Firebase agar listener di kedua pemain terpicu
-        db.collection("room_catur").doc(roomId).update({
+        const data      = doc.data();
+        const namaLawan = peranSaya === 'w'
+            ? (data.pemainHitam || 'Lawan')
+            : (data.pemainPutih || 'Lawan');
+
+        // Tulis status selesai → listener di sisi lawan akan terpicu otomatis
+        return db.collection("room_catur").doc(roomId).update({
             statusGame: "selesai",
-            pemenang:   namaPemenang,
-            keterangan: `🏳️ ${usernameSaya} telah menyerah`
-        }).catch((err) => { 
-            console.error("Gagal memproses penyerahan: ", err); 
-        });
-    });
-}
+            pemenang:   namaLawan,
+            keterangan: `${usernameSaya} Menyerah`
+        }).then(() => {
+            // Tampilkan gameover di sisi yang menyerah
+            clearInterval(intervalJam);
+            gameDimulai = false;
 
+            document.getElementById('taunt-text').innerHTML =
+                `🏳️ Kamu menyerah.<br>
+                 <span style='color:#ef4444;'>Pemenangnya adalah ${namaLawan}!</span>`;
+            document.getElementById('gameover-overlay').style.display = 'flex';
+            document.getElementById('area-tombol-gameover').innerHTML = `
+                <button class="btn-rematch" style="background:#374151;"
+                        onclick="kembaliKeHome()">🏠 Kembali ke Lobby</button>
+            `;
+        });
+    }).catch(err => { console.error("Gagal menyerah:", err); });
+}
 
 // --- KEMBALI KE HALAMAN UTAMA ---
 function kembaliKeHome() {
@@ -456,9 +468,9 @@ function bukaModalEditProfil() {
             db.collection("para_pemain").doc(usernameSaya).update({ status: "bermain", lawan: namaLawan, roomId });
 
             alert("Tantangan ulang berhasil dikirim! Menunggu keputusan si pemenang...");
-document.getElementById('gameover-overlay').style.display = 'none';
-aktifkanListenerRoom();  // <--- DISESUAIKAN JADI KANAN
-mulaiPermainanNyata();
+            document.getElementById('gameover-overlay').style.display = 'none';
+            aktifkanListenerOnline();
+            mulaiPermainanNyata();
         });
     };
 
