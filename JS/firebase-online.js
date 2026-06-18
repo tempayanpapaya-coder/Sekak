@@ -7,8 +7,8 @@
 
 /** Generate kode room unik */
 function generateKodeRoom() {
-    const huruf = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz23456789';
-    let kode = 'DRAGON-';
+    const huruf = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let kode = 'SEKAK-';
     for (let i = 0; i < 6; i++) {
         kode += huruf[Math.floor(Math.random() * huruf.length)];
     }
@@ -296,7 +296,7 @@ function salinLinkRoom() {
 function shareRoomLink(link) {
     if (navigator.share) {
         navigator.share({
-            title: 'Ayo sekak karo aku, wanibra?!',
+            title: 'Ayo main Sekak Jowo!',
             text:  usernameSaya + ' mengajakmu duel catur! Kode: ' + roomId,
             url:   link
         }).catch(() => {});
@@ -391,8 +391,39 @@ function aktifkanListenerRoom() {
             hapusHighlight();
         }
 
-        // ── 4. Game selesai → hapus room ──
+        // ── 4. Game selesai (termasuk menyerah dari lawan) ──
         if (data.statusGame === 'selesai') {
+
+            // Hentikan timer & kunci board
+            clearInterval(intervalJam);
+            gameDimulai = false;
+
+            // Tampilkan gameover di sisi yang TIDAK menyerah (lawan)
+            // Cek: apakah event ini bukan dipicu oleh diri sendiri?
+            const sayaYangMenyerah = data.keterangan &&
+                data.keterangan.includes(usernameSaya + ' Menyerah');
+
+            if (!sayaYangMenyerah) {
+                // Ini berarti LAWAN yang menyerah → tampilkan menang di layar kita
+                const pemenangTeks = data.keterangan
+                    ? data.keterangan.replace(' Menyerah', '') + ' menyerah!'
+                    : 'Lawan menyerah!';
+
+                const tauntEl = document.getElementById('taunt-text');
+                const overlayEl = document.getElementById('gameover-overlay');
+                const areaTombol = document.getElementById('area-tombol-gameover');
+
+                if (tauntEl) tauntEl.innerHTML =
+                    `🏆 Kamu menang!<br>
+                     <span style="color:#aaa; font-size:13px;">${pemenangTeks}</span>`;
+
+                if (overlayEl) overlayEl.style.display = 'flex';
+
+                if (areaTombol) areaTombol.innerHTML = `
+                    <button class="btn-rematch" onclick="kembaliKeHome()">🏠 Kembali ke Lobby</button>
+                `;
+            }
+
             if (_listenerRoom) { _listenerRoom(); _listenerRoom = null; }
             _hapusRoomDariFirebase();
         }
