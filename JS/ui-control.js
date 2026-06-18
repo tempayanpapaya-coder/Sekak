@@ -464,9 +464,9 @@ function bukaModalEditProfil() {
             db.collection("para_pemain").doc(usernameSaya).update({ status: "bermain", lawan: namaLawan, roomId });
 
             alert("Tantangan ulang berhasil dikirim! Menunggu keputusan si pemenang...");
-            document.getElementById('gameover-overlay').style.display = 'none';
-            aktifkanListenerOnline();
-            mulaiPermainanNyata();
+document.getElementById('gameover-overlay').style.display = 'none';
+aktifkanListenerRoom();  // <--- DISESUAIKAN JADI KANAN
+mulaiPermainanNyata();
         });
     };
 

@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     board.position(dataRoom.fen);
                     board.orientation(peranSaya === 'b' ? 'black' : 'white');
                 }
-                aktifkanListenerOnline();
+                aktifkanListenerRoom();
                 tukarArahJam();
                 updateStatus();
                 alert("⚡ Pertandingan berhasil dipulihkan! Lanjutkan permainan.");
@@ -195,10 +195,16 @@ function suksesMelangkah() {
         }
     }
 
-    tukarArahJam();
     updateStatus();
 
-    if (modeGame === "friend") kirimLangkahKeFirebase();
+    if (modeGame === "friend") {
+        // tukarArahJam() sudah dipanggil di dalam kirimLangkahKeFirebase
+        // agar tidak double-trigger
+        kirimLangkahKeFirebase();
+    } else {
+        // Mode AI & Puzzle: putar timer langsung di sini
+        tukarArahJam();
+    }
 
     if (modeGame === "ai" && !game.game_over()) {
         if (
