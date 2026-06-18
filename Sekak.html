@@ -29,7 +29,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <span id="info-pemain-aktif" style="font-size: 14px; color: #fff;">⌛ Memuat profil pemain online...</span>
             
-            <button onclick="bukaModalEditProfil()" style="background: #ff9f43; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px;">
+            <button onclick="bukaModalEditProfil()" style="margin-top:0; background: #734114; color:#00f2fe; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom:5px;">
                 ✏️ EDIT NAMA
             </button>
         </div>
@@ -170,11 +170,20 @@
 </div>
 <audio id="gameBacksound" src="https://github.com/nguantukbanget84-sys/silsilah-audio/raw/refs/heads/main/Yen%20ing%20tawang.mp3" loop></audio>
 
-<script src="JS/Sekak.js"></script>
-</body>
-
 <button id="btn-toggle-audio" class="hide-in-game" onclick="toggleAudio()" style="position: fixed; top: 10px; right: 10px; z-index: 9999; background: #222533; color: white; border: 1px solid #444; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
     🔈 Mute Music
 </button>
+
+
+<script src="JS/config.js"></script>
+<script src="JS/audio.js"></script>
+<script src="JS/game-engine.js"></script>
+<script src="JS/ui-control.js"></script>
+<script src="JS/firebase-online.js"></script>
+
+
+
+</body>
+
 
 </html>
