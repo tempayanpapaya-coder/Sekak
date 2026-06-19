@@ -234,10 +234,46 @@ function restartBoardOnly() {
     clearInterval(intervalJam);
     hapusHighlight();
     kotakAsal   = null;
-    gameDimulai = false;
+    gameDimulai = true;
 
-    game.reset();
-    if (board) { board.start(); board.orientation("white"); }
+    const mode = document.getElementById("gameMode").value;
+
+    if (mode === "puzzle") {
+        // ── Mode Puzzle: load ulang FEN yang sama, reset counter ──
+        langkahPuzzleTerpakai = 0;
+        jatahLangkahPuzzle    = 5;
+
+        const sisaEl = document.getElementById("sisa-langkah");
+        if (sisaEl) sisaEl.innerText = 5;
+
+        // Ambil FEN baru dari bank (acak lagi sesuai level)
+        const levelAI   = document.getElementById("aiLevel")?.value || "3";
+        const bankLevel = bankPosisiPuzzle[levelAI] || bankPosisiPuzzle["3"];
+        const pilihan   = bankLevel[Math.floor(Math.random() * bankLevel.length)];
+
+        game.load(pilihan.fen);
+        if (board) { board.position(pilihan.fen); board.orientation("white"); }
+
+        // Update label
+        const labelTeks = document.getElementById("puzzle-label-teks");
+        if (labelTeks) labelTeks.innerText = "🧩 " + pilihan.label;
+
+        if (statusEl) statusEl.innerText = "🧩 " + pilihan.label + " — Habisi dalam 5 langkah!";
+
+        // Sembunyikan overlay jika masih tampil
+        const overlayEl = document.getElementById("gameover-overlay");
+        if (overlayEl) { overlayEl.style.display = "none"; overlayEl.style.flexDirection = ""; }
+        const areaTombol = document.getElementById("area-tombol-gameover");
+        if (areaTombol) areaTombol.innerHTML = "";
+
+        // Puzzle tidak pakai timer → tidak perlu formatTampilanJam
+        return;
+
+    } else {
+        // ── Mode AI / Friend: reset penuh ke posisi awal ──
+        game.reset();
+        if (board) { board.start(); board.orientation("white"); }
+    }
 
     const durasiPilihan = parseInt(document.getElementById("timeLimit").value) || 300;
     waktuPutih = durasiPilihan;

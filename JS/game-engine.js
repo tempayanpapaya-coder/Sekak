@@ -16,13 +16,36 @@ try {
 if (aiEngine) {
     aiEngine.onmessage = function (event) {
         if (event.data.indexOf("bestmove") > -1) {
-            const moveSourceTarget = event.data.split(" ")[1];
-            const from = moveSourceTarget.substring(0, 2);
-            const to   = moveSourceTarget.substring(2, 4);
+            const bagian = event.data.split(" ");
+            const moveStr = bagian[1];
 
-            game.move({ from, to, promotion: "q" });
-            board.position(game.fen());
+            // "bestmove (none)" atau tidak valid → skip
+            if (!moveStr || moveStr === "(none)") {
+                updateStatus();
+                return;
+            }
 
+            const from = moveStr.substring(0, 2);
+            const to   = moveStr.substring(2, 4);
+
+            const hasilMove = game.move({ from, to, promotion: "q" });
+            if (!hasilMove) return;
+
+            if (board) board.position(game.fen());
+
+            const modeGame = document.getElementById("gameMode")?.value;
+
+            // Puzzle: AI balas tapi jangan putar timer (timer hanya untuk player)
+            if (modeGame === "puzzle") {
+                updateStatus();
+                if (game.in_checkmate()) {
+                    // Jika AI malah kena mat setelah balas → player menang
+                    tampilHasilPuzzle(true);
+                }
+                return;
+            }
+
+            // Mode AI normal
             tukarArahJam();
             updateStatus();
         }
@@ -80,7 +103,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     board.position(dataRoom.fen);
                     board.orientation(peranSaya === 'b' ? 'black' : 'white');
                 }
-                aktifkanListenerRoom();
+                aktifkanListenerOnline();
                 tukarArahJam();
                 updateStatus();
                 alert("⚡ Pertandingan berhasil dipulihkan! Lanjutkan permainan.");
@@ -119,8 +142,11 @@ function onSquareClick(square) {
         if (warnaPilihan === "black" && game.turn() === "w") return;
     }
 
-    // Sensor puzzle: hanya putih yang boleh main
-    if (modeGame === "puzzle" && game.turn() === "b") return;
+    // Sensor puzzle: blokir input player saat giliran AI membalas
+    if (modeGame === "puzzle" && game.turn() === "b") {
+        // Giliran hitam = giliran AI membalas, player tidak boleh klik
+        return;
+    }
 
     if (game.game_over() || waktuPutih <= 0 || waktuHitam <= 0) return;
 
@@ -184,15 +210,29 @@ function suksesMelangkah() {
     const warnaPilihan = document.getElementById("playerColor").value;
 
     if (modeGame === "puzzle") {
+        // Hitung hanya langkah PLAYER (putih), bukan balasan AI
         langkahPuzzleTerpakai++;
         const sisa = jatahLangkahPuzzle - langkahPuzzleTerpakai;
-        document.getElementById("sisa-langkah").innerText = sisa;
-        if (sisa <= 0 && !game.in_checkmate()) {
-            clearInterval(intervalJam);
-            statusEl.innerText = "❌ Langkah Gagal! Jatah 5 langkah habis.";
-            alert("Kamu gagal menyelesaikan puzzle dalam jatah 5 langkah!");
+        const sisaEl = document.getElementById("sisa-langkah");
+        if (sisaEl) sisaEl.innerText = sisa;
+
+        // Cek mat setelah langkah player
+        if (game.in_checkmate()) {
+            tampilHasilPuzzle(true);
             return;
         }
+
+        // Jatah habis tanpa mat
+        if (sisa <= 0) {
+            tampilHasilPuzzle(false);
+            return;
+        }
+
+        // AI balas langkah dengan level sesuai pilihan
+        updateStatus();
+        statusEl.innerText = "🤖 AI membalas...";
+        setTimeout(pemicuLangkahAIPuzzle, 600);
+        return;
     }
 
     updateStatus();
@@ -223,6 +263,83 @@ function pemicuLangkahAI() {
     aiEngine.postMessage("setoption name Skill Level value " + levelAI);
     aiEngine.postMessage("position fen " + game.fen());
     aiEngine.postMessage("go movetime 1000");
+}
+
+// AI balas di mode puzzle — pakai level sesuai pilihan, waktu lebih singkat
+function pemicuLangkahAIPuzzle() {
+    if (!aiEngine || game.game_over()) return;
+    const levelAI = document.getElementById("aiLevel")?.value || "3";
+    aiEngine.postMessage("setoption name Skill Level value " + levelAI);
+    aiEngine.postMessage("position fen " + game.fen());
+    // Waktu pikir AI di puzzle lebih singkat agar tidak terasa lambat
+    aiEngine.postMessage("go movetime 500");
+}
+
+// Tampilkan hasil puzzle: berhasil atau gagal
+function tampilHasilPuzzle(berhasil) {
+    clearInterval(intervalJam);
+    gameDimulai = false;
+
+    const tauntEl   = document.getElementById('taunt-text');
+    const overlayEl = document.getElementById('gameover-overlay');
+    const areaTombol = document.getElementById('area-tombol-gameover');
+
+    if (berhasil) {
+        if (tauntEl) tauntEl.innerHTML =
+            `🎉 BERHASIL! Kamu menyelesaikan puzzle!<br>
+             <span style="color:#aaa; font-size:13px;">
+                Tersisa ${jatahLangkahPuzzle - langkahPuzzleTerpakai} langkah tidak terpakai.
+             </span>`;
+    } else {
+        if (tauntEl) tauntEl.innerHTML =
+            `❌ Gagal! Jatah 5 langkah habis.<br>
+             <span style="color:#aaa; font-size:13px;">Coba lagi dengan strategi berbeda!</span>`;
+    }
+
+    if (overlayEl) overlayEl.style.display = 'flex';
+    // Menjadi:
+if (areaTombol) areaTombol.innerHTML = `
+    <button class="btn-rematch" onclick="puzzleBaru()">🔄 Puzzle Baru</button>
+    <button class="btn-rematch" style="background:#374151; margin-top:8px;" onclick="resetGame()">🏠 Kembali ke Menu</button>
+`;
+}
+
+// Letakkan setelah fungsi tampilHasilPuzzle()
+function puzzleBaru() {
+    // Reset state puzzle
+    langkahPuzzleTerpakai = 0;
+    jatahLangkahPuzzle    = 5;
+    gameDimulai           = true;
+    kotakAsal             = null;
+    hapusHighlight();
+
+    // Update counter
+    const sisaEl = document.getElementById("sisa-langkah");
+    if (sisaEl) sisaEl.innerText = 5;
+
+    // Sembunyikan overlay gameover
+    const overlayEl = document.getElementById("gameover-overlay");
+    if (overlayEl) {
+        overlayEl.style.display = "none";
+        overlayEl.style.flexDirection = "";
+    }
+    const areaTombol = document.getElementById("area-tombol-gameover");
+    if (areaTombol) areaTombol.innerHTML = "";
+
+    // Pilih FEN baru dari bank sesuai level
+    const levelAI   = document.getElementById("aiLevel")?.value || "3";
+    const bankLevel = bankPosisiPuzzle[levelAI] || bankPosisiPuzzle["3"];
+    const pilihan   = bankLevel[Math.floor(Math.random() * bankLevel.length)];
+
+    game.load(pilihan.fen);
+    if (board) { board.position(pilihan.fen); board.orientation("white"); }
+
+    // Update label puzzle
+    const labelTeks = document.getElementById("puzzle-label-teks");
+    if (labelTeks) labelTeks.innerText = "🧩 " + pilihan.label;
+
+    // Update status
+    if (statusEl) statusEl.innerText = "🧩 " + pilihan.label + " — Habisi dalam 5 langkah!";
 }
 
 // --- SISTEM JAM ---
@@ -301,8 +418,11 @@ function updateStatus() {
     const overlayGameOver = document.getElementById('gameover-overlay');
     const tauntTextEl     = document.getElementById('taunt-text');
 
+    // Di dalam updateStatus(), ganti blok ini:
+
     if (game.in_checkmate()) {
         clearInterval(intervalJam);
+        gameDimulai = false;   // ← TAMBAH INI
         let kalimatEjekan = "";
 
         if (mode === 'ai') {
@@ -320,12 +440,42 @@ function updateStatus() {
 
         if (tauntTextEl) tauntTextEl.innerHTML = kalimatEjekan;
         if (overlayGameOver) overlayGameOver.style.display = 'flex';
+
+        // ← TAMBAH BLOK INI: inject tombol sesuai mode
+        const areaTombol = document.getElementById('area-tombol-gameover');
+        if (areaTombol) {
+            if (mode === 'ai') {
+                areaTombol.innerHTML = `
+                    <button class="btn-rematch" onclick="restartBoardOnly()">🔄 Main Lagi</button>
+                    <button class="btn-rematch" style="background:#374151; margin-top:8px;" onclick="kembaliKeHome()">🏠 Kembali ke Lobby</button>
+                `;
+            } else if (mode === 'friend') {
+                areaTombol.innerHTML = `
+                    <button class="btn-rematch" style="background:#374151;" onclick="kembaliKeHome()">🏠 Kembali ke Lobby</button>
+                `;
+            } else {
+                areaTombol.innerHTML = `
+                    <button class="btn-rematch" onclick="resetGame()">🔄 Puzzle Baru</button>
+                `;
+            }
+        }
+
         status = '💥 GAME OVER! Skakmat.';
 
     } else if (game.in_draw()) {
         clearInterval(intervalJam);
+        gameDimulai = false;   // ← TAMBAH INI
         if (tauntTextEl) tauntTextEl.innerHTML = "🤝 Pertandingan Remis! Sama-sama kuat atau sama-sama... ah sudahlah. 🥴";
         if (overlayGameOver) overlayGameOver.style.display = 'flex';
+
+        // ← TAMBAH BLOK INI
+        const areaTombol = document.getElementById('area-tombol-gameover');
+        if (areaTombol) {
+            areaTombol.innerHTML = `
+                <button class="btn-rematch" onclick="restartBoardOnly()">🔄 Main Lagi</button>
+                <button class="btn-rematch" style="background:#374151; margin-top:8px;" onclick="kembaliKeHome()">🏠 Kembali ke Lobby</button>
+            `;
+        }
         status = '🤝 GAME OVER! Pertandingan Remis.';
 
     } else {
