@@ -71,7 +71,24 @@ function mulaiPermainanNyata() {
         statusEl.innerText = `🎮 Mode Online Aktif! Anda memegang pion: ${peranSaya === "w" ? "PUTIH" : "HITAM"}`;
 
     } else if (modeAktif === "puzzle") {
-        statusEl.innerText = "🧩 Mode Puzzle: Habisi lawan dalam 5 langkah mati!";
+        // Pastikan FEN puzzle yang sudah dipilih di resetGame() tetap terpasang
+        // (bukan board default posisi penuh)
+        if (board) {
+            board.orientation("white");
+            board.position(game.fen()); // game.fen() sudah berisi FEN puzzle dari resetGame()
+        }
+
+        // Sembunyikan timer (puzzle tidak pakai timer)
+        const wrapAtas  = document.getElementById("timer-wrapper-top");
+        const wrapBawah = document.getElementById("timer-wrapper-bottom");
+        if (wrapAtas)  wrapAtas.style.display  = "none";
+        if (wrapBawah) wrapBawah.style.display = "none";
+
+        // Tampilkan label puzzle
+        const labelBox = document.getElementById("puzzle-label-box");
+        if (labelBox) labelBox.style.display = "block";
+
+        tukarArahJam(); // mulai timer sebagai fallback (tidak aktif di puzzle)
 
     } else {
         // VS AI
@@ -144,20 +161,42 @@ function resetGame() {
         modePuzzleAktif       = true;
         jatahLangkahPuzzle    = 5;
         langkahPuzzleTerpakai = 0;
-        document.getElementById("sisa-langkah").innerText = jatahLangkahPuzzle;
+
+        const sisaEl = document.getElementById("sisa-langkah");
+        if (sisaEl) sisaEl.innerText = jatahLangkahPuzzle;
         document.getElementById("puzzle-counter-box").style.display = "block";
-        document.getElementById("difficultyRow").style.display      = "none";
+        document.getElementById("difficultyRow").style.display      = "flex"; // tetap tampil agar bisa ganti level
         document.getElementById("playerColorRow").style.display     = "none";
         document.getElementById("marquee-duel").style.display       = "none";
 
-        const indeksAcak     = Math.floor(Math.random() * bankPosisiPuzzle.length);
-        const posisiFenAcak  = bankPosisiPuzzle[indeksAcak];
-        game.load(posisiFenAcak);
-        if (board) board.position(posisiFenAcak);
+        // Pilih FEN dari bank sesuai level AI yang dipilih
+        const levelAI   = document.getElementById("aiLevel")?.value || "3";
+        const bankLevel = bankPosisiPuzzle[levelAI] || bankPosisiPuzzle["3"];
+        const pilihan   = bankLevel[Math.floor(Math.random() * bankLevel.length)];
+
+        game.load(pilihan.fen);
+        if (board) { board.position(pilihan.fen); board.orientation("white"); }
+
+        // Tampilkan label di kotak label
+        const labelBox  = document.getElementById("puzzle-label-box");
+        const labelTeks = document.getElementById("puzzle-label-teks");
+        if (labelBox)  labelBox.style.display  = "block";
+        if (labelTeks) labelTeks.innerText      = "🧩 " + pilihan.label;
+
+        if (statusEl) statusEl.innerText = "Klik START GAME untuk memulai puzzle!";
 
     } else {
         modePuzzleAktif = false;
         document.getElementById("puzzle-counter-box").style.display = "none";
+
+        // Sembunyikan label puzzle, kembalikan timer
+        const labelBox  = document.getElementById("puzzle-label-box");
+        if (labelBox) labelBox.style.display = "none";
+        const wrapAtas  = document.getElementById("timer-wrapper-top");
+        const wrapBawah = document.getElementById("timer-wrapper-bottom");
+        if (wrapAtas)  wrapAtas.style.display  = "block";
+        if (wrapBawah) wrapBawah.style.display = "block";
+
         game.reset();
         if (board) { board.start(); board.orientation("white"); }
 
@@ -180,11 +219,11 @@ function resetGame() {
     document.getElementById("timer-white").classList.remove("active-timer");
     document.getElementById("timer-black").classList.remove("active-timer");
 
-    statusEl.innerText = "Menu Terkunci. Klik START GAME untuk mulai.";
+    // Puzzle sudah load FEN-nya sendiri di blok atas — jangan di-reset lagi
+    if (mode !== "puzzle") {
+        statusEl.innerText = "Menu Terkunci. Klik START GAME untuk mulai.";
+    }
     document.getElementById("btn-reset-board").style.display = "none";
-
-    game.reset();
-    if (board) board.start();
     hapusHighlight();
     kotakAsal = null;
 }
