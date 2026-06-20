@@ -384,7 +384,9 @@ body {
     margin-top: 8px;
     transition: opacity 0.2s;
 }
-.btn-rematch:hover { opacity: 0.85; }
+.btn-rematch:hover  { opacity: 0.85; }
+.btn-rematch.btn-swap  { background: #6c5ce7; }
+.btn-rematch.btn-lobby { background: #374151; }
 
 /* ── STATUS BOX ── */
 .status-box {
@@ -652,6 +654,21 @@ body {
 
 /* ── FLASH CHECKMATE ── */
 body.flash-checkmate { animation: none; }
+
+/* ── KARTU KARAKTER AI ── */
+#kartu-karakter-ai {
+    /* Style utama di-inject JS (dynamic warna per level) */
+    transition: opacity 0.3s;
+}
+
+#balon-komentar-ai {
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0);   }
+}
 
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar { width: 4px; }
