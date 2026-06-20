@@ -273,6 +273,12 @@ function restartBoardOnly() {
         // ── Mode AI / Friend: reset penuh ke posisi awal ──
         game.reset();
         if (board) { board.start(); board.orientation("white"); }
+
+        // Sembunyikan overlay gameover
+        const overlayEl = document.getElementById("gameover-overlay");
+        if (overlayEl) { overlayEl.style.display = "none"; overlayEl.style.flexDirection = ""; }
+        const areaTombol = document.getElementById("area-tombol-gameover");
+        if (areaTombol) areaTombol.innerHTML = "";
     }
 
     const durasiPilihan = parseInt(document.getElementById("timeLimit").value) || 300;
@@ -478,7 +484,183 @@ function bukaModalEditProfil() {
     setInterval(aturTampilanMarqueeOtomatis, 1000);
 })();
 
-// --- REMATCH ONLINE ---
+// ============================================================
+// SISTEM SWAP WARNA & REMATCH
+// ============================================================
+
+// Helper: bersihkan overlay gameover
+function _tutupOverlayGameover() {
+    const overlayEl = document.getElementById("gameover-overlay");
+    if (overlayEl) { overlayEl.style.display = "none"; overlayEl.style.flexDirection = ""; }
+    const areaTombol = document.getElementById("area-tombol-gameover");
+    if (areaTombol) areaTombol.innerHTML = "";
+}
+
+// Helper: reset board & timer tanpa ubah warna/peran
+function _resetBoardDanTimer() {
+    clearInterval(intervalJam);
+    hapusHighlight();
+    kotakAsal   = null;
+    gameDimulai = true;
+
+    game.reset();
+
+    const durasi = parseInt(document.getElementById("timeLimit").value) || 300;
+    waktuPutih = durasi;
+    waktuHitam = durasi;
+    formatTampilanJam("clock-white", waktuPutih);
+    formatTampilanJam("clock-black", waktuHitam);
+    document.getElementById("timer-white").classList.remove("active-timer");
+    document.getElementById("timer-black").classList.remove("active-timer");
+}
+
+// ── MAIN LAGI WARNA SAMA (AI & Online) ──
+function mainLagiSamaWarna() {
+    putarSuara(sfxClick);
+    _tutupOverlayGameover();
+    _resetBoardDanTimer();
+
+    const mode = document.getElementById("gameMode").value;
+
+    if (mode === 'ai') {
+        const warnaPilihan = document.getElementById("playerColor").value;
+        if (board) board.position('start');
+
+        if (warnaPilihan === 'black') {
+            if (board) board.orientation('black');
+            statusEl.innerText = "🤖 AI (Putih) sedang berpikir...";
+            tukarArahJam();
+            setTimeout(pemicuLangkahAI, 600);
+        } else {
+            if (board) board.orientation('white');
+            statusEl.innerText = "Giliran: Klik Bidak Putih (Kamu)";
+            tukarArahJam();
+        }
+
+    } else if (mode === 'friend') {
+        if (!roomId) return;
+        // Reset room di Firebase, peran tetap sama
+        const durasi = parseInt(document.getElementById("timeLimit").value) || 300;
+        db.collection("room_catur").doc(roomId).update({
+            fen:        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            turn:       "w",
+            statusGame: "berjalan",
+            waktuPutih: durasi,
+            waktuHitam: durasi,
+            requestTukarWarna: null
+        }).then(() => {
+            if (board) { board.position('start'); board.orientation(peranSaya === 'b' ? 'black' : 'white'); }
+            statusEl.innerText = peranSaya === 'w' ? "Giliran: Klik Bidak Putih (Kamu)" : "⏳ Giliran Putih...";
+            tukarArahJam();
+        });
+    }
+}
+
+// ── TUKAR WARNA VS AI (langsung tanpa konfirmasi) ──
+function tukarWarnaAI() {
+    putarSuara(sfxClick);
+    _tutupOverlayGameover();
+    _resetBoardDanTimer();
+
+    // Balik pilihan warna
+    const selectWarna = document.getElementById("playerColor");
+    const warnaLama   = selectWarna.value;
+    const warnaBaru   = warnaLama === 'white' ? 'black' : 'white';
+    selectWarna.value = warnaBaru;
+
+    if (board) { board.position('start'); board.orientation(warnaBaru === 'black' ? 'black' : 'white'); }
+
+    if (warnaBaru === 'black') {
+        // Kita jadi hitam → AI (putih) jalan duluan
+        statusEl.innerText = "🤖 AI (Putih) sedang berpikir...";
+        tukarArahJam();
+        setTimeout(pemicuLangkahAI, 600);
+    } else {
+        statusEl.innerText = "Giliran: Klik Bidak Putih (Kamu)";
+        tukarArahJam();
+    }
+}
+
+// ── MINTA TUKAR WARNA KE LAWAN (Online) ──
+function mintaTukarWarna() {
+    putarSuara(sfxClick);
+    if (!roomId) return;
+
+    // Kirim request ke Firebase
+    db.collection("room_catur").doc(roomId).update({
+        requestTukarWarna: usernameSaya
+    }).then(() => {
+        // Update tombol jadi menunggu
+        const areaTombol = document.getElementById("area-tombol-gameover");
+        if (areaTombol) areaTombol.innerHTML = `
+            <p style="color:#aaa; font-size:13px; margin-bottom:10px;">
+                ⏳ Menunggu persetujuan lawan...
+            </p>
+            <button class="btn-rematch btn-lobby" onclick="batalRequestTukarWarna()">
+                ✕ Batalkan
+            </button>
+        `;
+    });
+}
+
+// ── BATALKAN REQUEST ──
+function batalRequestTukarWarna() {
+    putarSuara(sfxClick);
+    if (!roomId) return;
+    db.collection("room_catur").doc(roomId).update({ requestTukarWarna: null })
+    .then(() => {
+        const areaTombol = document.getElementById("area-tombol-gameover");
+        if (areaTombol) areaTombol.innerHTML = _tombolGameOver('friend');
+    });
+}
+
+// ── RESPON PERMINTAAN TUKAR WARNA DARI LAWAN ──
+function responTukarWarna(setuju) {
+    putarSuara(sfxClick);
+    if (!roomId) return;
+
+    if (!setuju) {
+        // Tolak → hapus request, kembalikan tombol normal
+        db.collection("room_catur").doc(roomId).update({ requestTukarWarna: null });
+        const areaTombol = document.getElementById("area-tombol-gameover");
+        if (areaTombol) areaTombol.innerHTML = _tombolGameOver('friend');
+        return;
+    }
+
+    // Setuju → tukar peran di Firebase + reset board
+    const durasi      = parseInt(document.getElementById("timeLimit").value) || 300;
+    const peranBaru   = peranSaya === 'w' ? 'b' : 'w';
+    const putihBaru   = peranSaya === 'w' ? usernameSaya : _getNamaLawan();
+    const hitamBaru   = peranSaya === 'b' ? usernameSaya : _getNamaLawan();
+
+    db.collection("room_catur").doc(roomId).update({
+        fen:               "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        turn:              "w",
+        statusGame:        "berjalan",
+        waktuPutih:        durasi,
+        waktuHitam:        durasi,
+        pemainPutih:       putihBaru,
+        pemainHitam:       hitamBaru,
+        requestTukarWarna: null
+    }).then(() => {
+        // Update peran lokal
+        peranSaya = peranBaru;
+        sessionStorage.setItem("catur_peran", peranSaya);
+
+        _tutupOverlayGameover();
+        _resetBoardDanTimer();
+
+        if (board) { board.position('start'); board.orientation(peranSaya === 'b' ? 'black' : 'white'); }
+        statusEl.innerText = peranSaya === 'w' ? "Giliran: Klik Bidak Putih (Kamu)" : "⏳ Menunggu giliran...";
+        tukarArahJam();
+    });
+}
+
+// Helper ambil nama lawan dari room
+function _getNamaLawan() {
+    // Diisi dari data Firebase saat listener terpicu
+    return window._namaLawanAktif || "Lawan";
+}
 (function () {
     let intervalPantauSelesai = null;
 

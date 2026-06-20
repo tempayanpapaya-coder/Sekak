@@ -1,0 +1,676 @@
+/* ============================================================
+   Sekak.css — Sekak Jowo Chess Game
+   Tambahan: sistem room, lobby panel, tombol fixed, gameover
+   ============================================================ */
+
+/* ── RESET & BASE ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background: #0f1117;
+    color: #fff;
+    font-family: 'Segoe UI', sans-serif;
+    min-height: 100vh;
+}
+
+/* ── GAME CONTAINER ── */
+.game-container {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 16px;
+}
+
+/* ╔══════════════════════════════════════╗
+   ║             AUTH SECTION             ║
+   ╚══════════════════════════════════════╝ */
+#auth-section {
+    padding: 12px 15px;
+    background: #1a1d2e;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#user-aktif-teks {
+    font-weight: bold;
+    color: #00f2fe;
+    font-size: 13px;
+}
+
+/* ── PROFIL BOX ── */
+#box-user-profile {
+    background: rgba(255,255,255,0.04);
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 12px;
+}
+
+.profil-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+#info-pemain-aktif {
+    font-size: 14px;
+    color: #fff;
+}
+
+.btn-edit-nama {
+    background: #ff9f43;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 12px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.btn-edit-nama:hover { background: #e08a2e; }
+
+/* ╔══════════════════════════════════════╗
+   ║            PANEL START               ║
+   ╚══════════════════════════════════════╝ */
+.tombol-start {
+    text-align: center;
+    padding: 20px 0 10px;
+}
+
+.tombol-start h1 {
+    font-size: clamp(22px, 6vw, 32px);
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: #fff;
+    margin-bottom: 14px;
+    text-shadow: 0 0 20px rgba(0,242,254,0.4);
+}
+
+.btn-start {
+    background: linear-gradient(135deg, #00f2fe, #4facfe);
+    color: #000;
+    border: none;
+    padding: 14px 40px;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(0,242,254,0.35);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-start:hover  { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,242,254,0.45); }
+.btn-start:active { transform: translateY(0); }
+
+/* ╔══════════════════════════════════════╗
+   ║            LOBBY PANEL               ║
+   ╚══════════════════════════════════════╝ */
+#lobby-panel {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+}
+
+.lobby-judul {
+    color: #00f2fe;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+}
+
+.teks-loading {
+    color: #aaa;
+    font-size: 13px;
+    font-style: italic;
+    text-align: center;
+    padding: 10px 0;
+}
+
+/* ── TOMBOL BUAT ROOM (di-inject JS) ── */
+/* Sudah di-style inline di JS, CSS ini sebagai fallback */
+#btn-buat-room button {
+    transition: opacity 0.2s, transform 0.15s;
+}
+#btn-buat-room button:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* ╔══════════════════════════════════════╗
+   ║           MENU SETTING               ║
+   ╚══════════════════════════════════════╝ */
+.menu-panel {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+}
+
+.menu-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+.menu-row:last-child { margin-bottom: 0; }
+
+.menu-row label {
+    font-size: 12px;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.menu-row select {
+    background: #1a1d2e;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+}
+.menu-row select:focus { border-color: #00f2fe; }
+
+/* Puzzle counter */
+#puzzle-counter-box {
+    background: #b91c1c;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 13px;
+    text-align: center;
+}
+
+/* ── MARQUEE ── */
+.marquee-container {
+    overflow: hidden;
+    background: linear-gradient(90deg, #1a0a00, #2d1500, #1a0a00);
+    border: 1px solid rgba(255,159,67,0.3);
+    border-radius: 6px;
+    padding: 8px 0;
+    margin-bottom: 12px;
+}
+
+.marquee-text {
+    display: inline-block;
+    white-space: nowrap;
+    color: #ff9f43;
+    font-weight: bold;
+    font-size: 13px;
+    animation: marquee-gerak 12s linear infinite;
+}
+
+@keyframes marquee-gerak {
+    from { transform: translateX(100vw); }
+    to   { transform: translateX(-100%); }
+}
+
+/* ╔══════════════════════════════════════╗
+   ║          ARENA PERTANDINGAN          ║
+   ╚══════════════════════════════════════╝ */
+#arena-pertandingan { margin-bottom: 10px; }
+
+/* ── Game Action Panel (ejek) ── */
+#game-action-panel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.kata-kata {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.kata-kata:hover { background: rgba(255,255,255,0.14); }
+
+#balon-ejek {
+    display: none;
+    background: #2d3748;
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    animation: pop-in 0.2s ease;
+}
+
+@keyframes pop-in {
+    from { transform: scale(0.8); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+
+/* ── TIMER ── */
+#timer-wrapper-top,
+#timer-wrapper-bottom { margin: 6px 0; }
+
+.timer-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 10px 16px;
+    transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+}
+
+.timer-label {
+    font-size: 12px;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.timer-container span:last-child {
+    font-size: 24px;
+    font-weight: 900;
+    font-family: 'Courier New', monospace;
+    color: #fff;
+    letter-spacing: 2px;
+}
+
+/* Timer aktif (giliran berjalan) */
+.timer-container.active-timer {
+    border-color: #00f2fe;
+    background: rgba(0,242,254,0.06);
+    box-shadow: 0 0 12px rgba(0,242,254,0.2);
+}
+
+.timer-container.active-timer span:last-child { color: #00f2fe; }
+
+/* Waktu kritis < 30 detik */
+.timer-container.waktu-kritis span:last-child {
+    color: #ef4444 !important;
+    animation: kedip-merah 0.6s infinite;
+}
+
+@keyframes kedip-merah {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.3; }
+}
+
+/* ── BOARD WRAPPER ── */
+.board-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    margin: 6px 0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#board {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Start overlay (di atas board sebelum game mulai) */
+#start-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: 8px;
+}
+
+/* ── GAMEOVER OVERLAY ── */
+#gameover-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 50;
+    border-radius: 8px;
+    backdrop-filter: blur(6px);
+}
+
+.gameover-content { text-align: center; padding: 20px; }
+
+.skakmat-animation {
+    font-size: clamp(28px, 8vw, 48px);
+    font-weight: 900;
+    color: #ef4444;
+    letter-spacing: 4px;
+    text-shadow: 0 0 20px rgba(239,68,68,0.6);
+    animation: pulse-red 1s infinite;
+}
+
+@keyframes pulse-red {
+    0%,100% { transform: scale(1); }
+    50%      { transform: scale(1.05); }
+}
+
+.taunt-style {
+    color: #ffd27f;
+    font-size: 15px;
+    margin-top: 10px;
+    line-height: 1.6;
+}
+
+/* Tombol di gameover */
+.btn-rematch {
+    background: #00b894;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 8px;
+    transition: opacity 0.2s;
+}
+.btn-rematch:hover  { opacity: 0.85; }
+.btn-rematch.btn-swap  { background: #6c5ce7; }
+.btn-rematch.btn-lobby { background: #374151; }
+
+/* ── STATUS BOX ── */
+.status-box {
+    text-align: center;
+    padding: 8px;
+    font-size: 14px;
+    color: #aaa;
+    min-height: 32px;
+}
+
+#status { color: #fff; font-weight: 500; }
+
+/* ╔══════════════════════════════════════╗
+   ║            PANEL AKSI                ║
+   ╚══════════════════════════════════════╝ */
+#panel-aksi {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.btn-reset {
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-reset:hover { background: rgba(255,255,255,0.1); }
+
+#btn-menyerah {
+    background: rgba(239,68,68,0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239,68,68,0.3);
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+#btn-menyerah:hover { background: rgba(239,68,68,0.2); }
+
+.btn-home-gaming {
+    background: rgba(255,255,255,0.05);
+    color: #aaa;
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s, color 0.2s;
+}
+.btn-home-gaming:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+/* ╔══════════════════════════════════════╗
+   ║       FULLSCREEN GAME LAYER          ║
+   ╚══════════════════════════════════════╝ */
+#fullscreen-game-layer {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: #0f1117;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    gap: 8px;
+    overflow: hidden;
+}
+
+#fullscreen-game-layer.aktif { display: flex; }
+
+/* Tombol fullscreen pojok kanan atas */
+#btn-fs-fullscreen {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255,255,255,0.07);
+    color: #aaa;
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    z-index: 10;
+    transition: background 0.2s, color 0.2s;
+}
+#btn-fs-fullscreen:hover { background: rgba(255,255,255,0.14); color: #fff; }
+
+/* Timer di fullscreen */
+#fs-timer-top,
+#fs-timer-bottom {
+    max-width: 500px;
+    width: 100%;
+}
+
+/* Board fullscreen */
+#fullscreen-board-wrap {
+    position: relative;
+    width: min(calc(100vw - 32px), calc(100vh - 260px));
+    max-width: 520px;
+    flex-shrink: 0;
+    aspect-ratio: 1;
+}
+
+#fs-board { width: 100% !important; height: 100% !important; }
+
+/* Gameover overlay di board fullscreen */
+#fs-gameover-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    border-radius: 12px;
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    backdrop-filter: blur(6px);
+}
+
+#fs-gameover-overlay.tampil { display: flex !important; }
+
+/* Status fullscreen */
+#fullscreen-status {
+    color: #fff;
+    font-size: 14px;
+    text-align: center;
+    min-height: 20px;
+    padding: 0 10px;
+}
+
+/* ── Hamburger (di-inject JS) ── */
+#fs-hamburger-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#btn-hamburger {
+    width: 42px;
+    height: 42px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 8px;
+    transition: background 0.2s;
+}
+#btn-hamburger:hover { background: rgba(255,255,255,0.14); }
+
+#btn-hamburger span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: #fff;
+    border-radius: 2px;
+    transition: transform 0.25s, opacity 0.25s;
+}
+#btn-hamburger.open span:nth-child(1) { transform: translateY(7px)  rotate(45deg); }
+#btn-hamburger.open span:nth-child(2) { opacity: 0; }
+#btn-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+.hamburger-menu {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1d2e;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+    box-shadow: 0 -8px 30px rgba(0,0,0,0.5);
+    z-index: 20;
+}
+.hamburger-menu.hidden { display: none; }
+
+.hamburger-menu button {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    color: #fff;
+    padding: 13px 20px;
+    text-align: left;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.hamburger-menu button:last-child { border-bottom: none; }
+.hamburger-menu button:hover { background: rgba(255,255,255,0.08); }
+
+/* ╔══════════════════════════════════════╗
+   ║       TOMBOL FIXED POJOK KANAN       ║
+   ╚══════════════════════════════════════╝ */
+.btn-fixed-pojok {
+    position: fixed;
+    right: 10px;
+    z-index: 9999;
+    background: #1a1d2e;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-fixed-pojok:hover { background: rgba(255,255,255,0.1); }
+
+/* Sembunyikan tombol fixed saat fullscreen layer aktif */
+#fullscreen-game-layer.aktif ~ #btn-toggle-audio,
+#fullscreen-game-layer.aktif ~ #btn-toggle-fullscreen {
+    display: none !important;
+}
+
+/* ╔══════════════════════════════════════╗
+   ║     PANEL TUNGGU LAWAN (ROOM)        ║
+   ║  Sebagian besar di-style inline JS,  ║
+   ║  ini hanya animasi yang dibutuhkan.  ║
+   ╚══════════════════════════════════════╝ */
+@keyframes kedipOrange {
+    0%,100% { opacity: 1; transform: scale(1);   }
+    50%      { opacity: 0.4; transform: scale(0.8); }
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0);    }
+}
+
+/* ── HIDE IN GAME ── */
+.hide-in-game { display: block; }
+
+/* ── EFEK API ── */
+.efek-api {
+    position: fixed;
+    font-size: 24px;
+    pointer-events: none;
+    animation: api-terbang 0.6s ease-out forwards;
+    z-index: 9999;
+}
+
+@keyframes api-terbang {
+    0%   { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-60px) scale(1.5); }
+}
+
+/* ── FLASH CHECKMATE ── */
+body.flash-checkmate { animation: none; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+
+/* ╔══════════════════════════════════════╗
+   ║           RESPONSIVE                 ║
+   ╚══════════════════════════════════════╝ */
+@media (max-width: 380px) {
+    .game-container { padding: 10px; }
+    .timer-container span:last-child { font-size: 20px; }
+    .btn-start { padding: 12px 28px; font-size: 16px; }
+}
+
+@media (min-height: 700px) {
+    #fullscreen-board-wrap {
+        width: min(calc(100vw - 32px), calc(100vh - 280px));
+    }
+}

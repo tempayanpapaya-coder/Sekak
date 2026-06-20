@@ -391,6 +391,51 @@ function aktifkanListenerRoom() {
             hapusHighlight();
         }
 
+        // ── 3b. Simpan nama lawan untuk fungsi swap warna ──
+        if (data.pemainPutih && data.pemainHitam) {
+            window._namaLawanAktif = peranSaya === 'w'
+                ? data.pemainHitam
+                : data.pemainPutih;
+        }
+
+        // ── 3c. Deteksi request tukar warna dari lawan ──
+        if (data.requestTukarWarna && data.requestTukarWarna !== usernameSaya) {
+            const areaTombol = document.getElementById('area-tombol-gameover');
+            const overlayEl  = document.getElementById('gameover-overlay');
+
+            // Buka overlay jika belum terbuka
+            if (overlayEl && overlayEl.style.display !== 'flex') {
+                overlayEl.style.display = 'flex';
+                const tauntEl = document.getElementById('taunt-text');
+                if (tauntEl) tauntEl.innerHTML =
+                    `🔃 ${data.requestTukarWarna} mengajak main lagi dengan tukar warna!`;
+            }
+
+            if (areaTombol) areaTombol.innerHTML = `
+                <div style="background:rgba(108,92,231,0.15);border:1px solid rgba(108,92,231,0.4);
+                            border-radius:10px;padding:14px;margin-bottom:8px;text-align:center;">
+                    <p style="color:#a29bfe;font-weight:bold;margin:0 0 4px;">
+                        Kamu akan bermain sebagai
+                        ${peranSaya === 'w' ? '⚫ Hitam' : '⚪ Putih'}
+                    </p>
+                    <div style="display:flex;gap:8px;justify-content:center;margin-top:10px;">
+                        <button class="btn-rematch" style="background:#00b894;flex:1;"
+                                onclick="responTukarWarna(true)">✅ Setuju</button>
+                        <button class="btn-rematch" style="background:#ef4444;flex:1;"
+                                onclick="responTukarWarna(false)">❌ Tolak</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Request dibatalkan lawan → kembalikan tombol normal
+        if (data.requestTukarWarna === null && !gameDimulai) {
+            const areaTombol = document.getElementById('area-tombol-gameover');
+            if (areaTombol && areaTombol.querySelector('button[onclick*="responTukarWarna"]')) {
+                areaTombol.innerHTML = _tombolGameOver('friend');
+            }
+        }
+
         // ── 4. Game selesai (termasuk menyerah dari lawan) ──
         if (data.statusGame === 'selesai') {
 

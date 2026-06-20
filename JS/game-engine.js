@@ -297,49 +297,9 @@ function tampilHasilPuzzle(berhasil) {
     }
 
     if (overlayEl) overlayEl.style.display = 'flex';
-    // Menjadi:
-if (areaTombol) areaTombol.innerHTML = `
-    <button class="btn-rematch" onclick="puzzleBaru()">🔄 Puzzle Baru</button>
-    <button class="btn-rematch" style="background:#374151; margin-top:8px;" onclick="resetGame()">🏠 Kembali ke Menu</button>
-`;
-}
-
-// Letakkan setelah fungsi tampilHasilPuzzle()
-function puzzleBaru() {
-    // Reset state puzzle
-    langkahPuzzleTerpakai = 0;
-    jatahLangkahPuzzle    = 5;
-    gameDimulai           = true;
-    kotakAsal             = null;
-    hapusHighlight();
-
-    // Update counter
-    const sisaEl = document.getElementById("sisa-langkah");
-    if (sisaEl) sisaEl.innerText = 5;
-
-    // Sembunyikan overlay gameover
-    const overlayEl = document.getElementById("gameover-overlay");
-    if (overlayEl) {
-        overlayEl.style.display = "none";
-        overlayEl.style.flexDirection = "";
-    }
-    const areaTombol = document.getElementById("area-tombol-gameover");
-    if (areaTombol) areaTombol.innerHTML = "";
-
-    // Pilih FEN baru dari bank sesuai level
-    const levelAI   = document.getElementById("aiLevel")?.value || "3";
-    const bankLevel = bankPosisiPuzzle[levelAI] || bankPosisiPuzzle["3"];
-    const pilihan   = bankLevel[Math.floor(Math.random() * bankLevel.length)];
-
-    game.load(pilihan.fen);
-    if (board) { board.position(pilihan.fen); board.orientation("white"); }
-
-    // Update label puzzle
-    const labelTeks = document.getElementById("puzzle-label-teks");
-    if (labelTeks) labelTeks.innerText = "🧩 " + pilihan.label;
-
-    // Update status
-    if (statusEl) statusEl.innerText = "🧩 " + pilihan.label + " — Habisi dalam 5 langkah!";
+    if (areaTombol) areaTombol.innerHTML = `
+        <button class="btn-rematch" onclick="resetGame()">🔄 Puzzle Baru</button>
+    `;
 }
 
 // --- SISTEM JAM ---
@@ -408,6 +368,36 @@ function hapusHighlight() {
     $("#board .square-55d63").css("background", "");
 }
 
+// --- HELPER: RENDER TOMBOL GAMEOVER SESUAI MODE ---
+function _tombolGameOver(mode) {
+    if (mode === 'ai') {
+        return `
+            <button class="btn-rematch" onclick="mainLagiSamaWarna()">
+                🔄 Main Lagi
+            </button>
+            <button class="btn-rematch btn-swap" onclick="tukarWarnaAI()">
+                🔃 Tukar Warna
+            </button>
+            <button class="btn-rematch btn-lobby" onclick="kembaliKeHome()">
+                🏠 Kembali ke Lobby
+            </button>
+        `;
+    } else if (mode === 'friend') {
+        return `
+            <button class="btn-rematch" onclick="mainLagiSamaWarna()">
+                🔄 Main Lagi (Warna Sama)
+            </button>
+            <button class="btn-rematch btn-swap" onclick="mintaTukarWarna()">
+                🔃 Minta Tukar Warna
+            </button>
+            <button class="btn-rematch btn-lobby" onclick="kembaliKeHome()">
+                🏠 Kembali ke Lobby
+            </button>
+        `;
+    }
+    return `<button class="btn-rematch" onclick="resetGame()">🔄 Puzzle Baru</button>`;
+}
+
 // --- UPDATE STATUS ---
 function updateStatus() {
     if (waktuPutih <= 0 || waktuHitam <= 0) return;
@@ -418,11 +408,9 @@ function updateStatus() {
     const overlayGameOver = document.getElementById('gameover-overlay');
     const tauntTextEl     = document.getElementById('taunt-text');
 
-    // Di dalam updateStatus(), ganti blok ini:
-
     if (game.in_checkmate()) {
         clearInterval(intervalJam);
-        gameDimulai = false;   // ← TAMBAH INI
+        gameDimulai = false;
         let kalimatEjekan = "";
 
         if (mode === 'ai') {
@@ -441,41 +429,21 @@ function updateStatus() {
         if (tauntTextEl) tauntTextEl.innerHTML = kalimatEjekan;
         if (overlayGameOver) overlayGameOver.style.display = 'flex';
 
-        // ← TAMBAH BLOK INI: inject tombol sesuai mode
+        // Inject tombol sesuai mode
         const areaTombol = document.getElementById('area-tombol-gameover');
-        if (areaTombol) {
-            if (mode === 'ai') {
-                areaTombol.innerHTML = `
-                    <button class="btn-rematch" onclick="restartBoardOnly()">🔄 Main Lagi</button>
-                    <button class="btn-rematch" style="background:#374151; margin-top:8px;" onclick="kembaliKeHome()">🏠 Kembali ke Lobby</button>
-                `;
-            } else if (mode === 'friend') {
-                areaTombol.innerHTML = `
-                    <button class="btn-rematch" style="background:#374151;" onclick="kembaliKeHome()">🏠 Kembali ke Lobby</button>
-                `;
-            } else {
-                areaTombol.innerHTML = `
-                    <button class="btn-rematch" onclick="resetGame()">🔄 Puzzle Baru</button>
-                `;
-            }
-        }
+        if (areaTombol) areaTombol.innerHTML = _tombolGameOver(mode);
 
         status = '💥 GAME OVER! Skakmat.';
 
     } else if (game.in_draw()) {
         clearInterval(intervalJam);
-        gameDimulai = false;   // ← TAMBAH INI
+        gameDimulai = false;
         if (tauntTextEl) tauntTextEl.innerHTML = "🤝 Pertandingan Remis! Sama-sama kuat atau sama-sama... ah sudahlah. 🥴";
         if (overlayGameOver) overlayGameOver.style.display = 'flex';
 
-        // ← TAMBAH BLOK INI
         const areaTombol = document.getElementById('area-tombol-gameover');
-        if (areaTombol) {
-            areaTombol.innerHTML = `
-                <button class="btn-rematch" onclick="restartBoardOnly()">🔄 Main Lagi</button>
-                <button class="btn-rematch" style="background:#374151; margin-top:8px;" onclick="kembaliKeHome()">🏠 Kembali ke Lobby</button>
-            `;
-        }
+        if (areaTombol) areaTombol.innerHTML = _tombolGameOver(mode);
+
         status = '🤝 GAME OVER! Pertandingan Remis.';
 
     } else {
