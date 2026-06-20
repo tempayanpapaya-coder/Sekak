@@ -83,12 +83,17 @@
             <div id="puzzle-counter-box" style="display:none;">
                 ⚠️ SISA JATAH LANGKAH MU: <span id="sisa-langkah">5</span> KALI LAGI!
             </div>
+
+            <!-- Label puzzle aktif (nama + difficulty, diisi JS) -->
+            <div id="puzzle-label-box" style="display:none; background:rgba(255,159,67,0.1); border:1px solid rgba(255,159,67,0.3); border-radius:6px; padding:6px 10px; font-size:12px; color:#ff9f43; margin-top:6px; text-align:center;">
+                <span id="puzzle-label-teks">—</span>
+            </div>
         </div>
 
         <!-- Level AI -->
         <div class="menu-row" id="difficultyRow">
             <label for="aiLevel">Tingkat Kesulitan AI:</label>
-            <select id="aiLevel">
+            <select id="aiLevel" onchange="if(document.getElementById('gameMode').value==='puzzle') resetGame();">
                 <option value="0">Pemula</option>
                 <option value="3" selected>Semi Pro</option>
                 <option value="10">Prestasi / Master</option>
@@ -145,7 +150,7 @@
         <div class="board-wrapper">
             <div id="board"></div>
             <div id="start-overlay"></div>
-            <div id="gameover-overlay" style="display:none;">
+            <div id="gameover-overlay" style="display:none; flex-direction:column; align-items:center; justify-content:center;">
                 <div class="gameover-content">
                     <div class="skakmat-animation">GAMEOVER!</div>
                     <div id="taunt-text" class="taunt-style">Aduh... Sepertinya Harus banyak berlatih denganku</div>
@@ -214,9 +219,11 @@
         <div id="fs-board"></div>
 
         <!-- Gameover overlay di dalam board fullscreen -->
-        <div id="fs-gameover-overlay">
+        <div id="fs-gameover-overlay" style="display:none;">
             <div class="skakmat-animation">GAMEOVER!</div>
             <div id="fs-taunt-text" class="taunt-style"></div>
+            <!-- Tombol aksi gameover fullscreen (di-inject JS) -->
+            <div id="fs-area-tombol-gameover" style="margin-top:16px; width:100%; padding:0 20px; box-sizing:border-box;"></div>
         </div>
     </div>
 
@@ -244,6 +251,15 @@
         onclick="document.fullscreenElement ? keluarFullscreen() : masukFullscreen()">
     ⛶ Layar Penuh
 </button>
+
+<button id="btn-install-pwa"
+        style="display:none; position:fixed; bottom:70px; right:10px;
+               z-index:9999; background:#00f2fe; color:#000; border:none;
+               padding:8px 14px; border-radius:8px; font-weight:bold;
+               font-size:13px; cursor:pointer; box-shadow:0 4px 15px rgba(0,242,254,0.4);">
+    📲 Install App
+</button>
+  
 
 <!-- ── SCRIPT (URUTAN WAJIB) ── -->
 <script src="JS/config.js"></script>

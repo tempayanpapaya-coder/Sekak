@@ -9,6 +9,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
+  <meta name="apple-mobile-web-app-title" content="Sekak Jowo">
+<link rel="apple-touch-icon" href="Aset/icon-192.png">
+
 <style>
 /* ── BASE ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -391,6 +394,15 @@ input[type="text"]:disabled {
 </style>
 </head>
 <body>
+
+<button id="btn-install-pwa"
+        style="display:none; position:fixed; bottom:70px; right:10px;
+               z-index:9999; background:#00f2fe; color:#000; border:none;
+               padding:8px 14px; border-radius:8px; font-weight:bold;
+               font-size:13px; cursor:pointer; box-shadow:0 4px 15px rgba(0,242,254,0.4);">
+    📲 Install App
+</button>
+  
 <div class="page-wrap">
 
     <!-- ── HEADER ── -->
@@ -758,6 +770,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Mulai pantau live matches
     pantauPertandinganLive();
 });
+
+  
 </script>
 </body>
 </html>

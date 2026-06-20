@@ -1,41 +1,107 @@
 {
-  "short_name": "Sekak Jowo",
-  "name": "Sekak Jowo - Game Catur Online & AI",
-  "description": "Game catur modern khas dengan mode VS Computer (Stockfish), Mode Puzzles, dan Multiplayer Online Real-time menggunakan Firebase Firestore.",
-  "icons": [
-    {
-      "src": "Aset/wN.png",
-      "type": "image/png",
-      "sizes": "192x192",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "Aset/bN.png",
-      "type": "image/png",
-      "sizes": "512x512",
-      "purpose": "any maskable"
-    }
-  ],
-  "start_url": "index.html",
-  "background_color": "#0d0e12",
-  "theme_color": "#00f2fe",
-  "display": "standalone",
-  "orientation": "portrait-primary",
-  "categories": ["games", "sports"],
-  "shortcuts": [
-    {
-      "name": "Main vs AI",
-      "short_name": "Vs AI",
-      "description": "Tantang Stockfish Engine AI lokal",
-      "url": "./Sekak.html?mode=ai",
-      "icons": [{ "src": "Aset/wN.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Main Online",
-      "short_name": "Online",
-      "description": "Masuk lobby dan tantang pemain lain secara real-time",
-      "url": "./Sekak.html?mode=friend",
-      "icons": [{ "src": "Aset/bN.png", "sizes": "192x192" }]
-    }
-  ]
+    "name": "Sekak Jowo — Catur Online",
+    "short_name": "Sekak Jowo",
+    "description": "Game catur online berbasis Jawa. Main VS AI, VS Teman, atau mode Puzzle!",
+    "start_url": "/index.html",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#0f1117",
+    "theme_color": "#00f2fe",
+    "lang": "id",
+    "categories": ["games", "entertainment"],
+
+    "icons": [
+        {
+            "src": "Aset/icon-72.png",
+            "sizes": "72x72",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "Aset/icon-96.png",
+            "sizes": "96x96",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "Aset/icon-128.png",
+            "sizes": "128x128",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "Aset/icon-144.png",
+            "sizes": "144x144",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "Aset/icon-152.png",
+            "sizes": "152x152",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "Aset/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "Aset/icon-384.png",
+            "sizes": "384x384",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "Aset/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+
+    "screenshots": [
+        {
+            "src": "Aset/screenshot-lobby.png",
+            "sizes": "390x844",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "Halaman Lobby Sekak Jowo"
+        },
+        {
+            "src": "Aset/screenshot-game.png",
+            "sizes": "390x844",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "Arena Pertandingan"
+        }
+    ],
+
+    "shortcuts": [
+        {
+            "name": "VS Komputer",
+            "short_name": "VS AI",
+            "description": "Langsung main melawan AI",
+            "url": "/Sekak.html?mode=ai",
+            "icons": [{ "src": "Aset/icon-96.png", "sizes": "96x96" }]
+        },
+        {
+            "name": "Buat Room",
+            "short_name": "Room",
+            "description": "Buat room untuk main VS teman",
+            "url": "/Sekak.html?mode=friend",
+            "icons": [{ "src": "Aset/icon-96.png", "sizes": "96x96" }]
+        },
+        {
+            "name": "Mode Puzzle",
+            "short_name": "Puzzle",
+            "description": "Selesaikan puzzle dalam 5 langkah",
+            "url": "/Sekak.html?mode=puzzle",
+            "icons": [{ "src": "Aset/icon-96.png", "sizes": "96x96" }]
+        }
+    ],
+
+    "prefer_related_applications": false
 }
