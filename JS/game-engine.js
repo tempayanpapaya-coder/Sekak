@@ -4,7 +4,157 @@
 // highlight, timer, status, dan kontrol game.
 // ============================================================
 
-// --- INISIALISASI STOCKFISH ---
+// ============================================================
+// SISTEM KARAKTER AI
+// ============================================================
+
+const karakterAI = {
+
+    // ── PEMULA (level 0) ──
+    "0": {
+        nama: ["Cah Pedot", "Koplak", "Kentir"],
+        avatar: "🤪",
+        warna: "#ff6b6b",
+        deskripsi: "Asal pencet, nggak paham aturan",
+        movetime: 300,  // Berpikir cepat = asal-asalan
+        blunderChance: 0.45, // 45% chance langkah random total
+
+        // Komentar saat situasi tertentu
+        komentarSkak:     ["Eh opo iki??", "Wah bahaya kayake...", "Hmm... ra mudeng"],
+        komentarMenang:   ["Sik... aku menang? Seriusan??", "Hoki ae iki!", "Wkwkwk ra nyangka"],
+        komentarKalah:    ["Lah kok iso kalah...", "Ulang! Ulang!", "Enak wae kowe!"],
+        komentarLangkah:  ["Hmm...", "Wes wes...", "Ra popo lah", "Sek tak pikir...", "Yowes iki wae"],
+    },
+
+    // ── SEMI PRO (level 3) ──
+    "3": {
+        nama: ["Rofain", "Lek Ipin", "Iga Bagus"],
+        avatar: "😏",
+        warna: "#f9ca24",
+        deskripsi: "Juara RT, sesekali blunder parah",
+        movetime: 1000,
+        blunderChance: 0.12, // 12% chance blunder
+
+        komentarSkak:     ["Wah skak! Ati-ati kowe!", "Hmm menarik...", "Mosok ra iso ngeles?"],
+        komentarMenang:   ["Yaa biasa lah, aku emang jago", "Rematch? Siap ae!", "Juara RT pancen beda level"],
+        komentarKalah:    ["Sial! Harusnya aku menang!", "Blunder maneh aku...", "Lain kali tak siapke strategi"],
+        komentarLangkah:  ["Analisis dulu...", "Ini jebakan!", "Sabar... tak pikir", "Hmmm sip sip", "Okelah"],
+    },
+
+    // ── MASTER (level 10) ──
+    "10": {
+        nama: ["Magnus Carlsen", "Hikaru Nakamura", "Fabiano Caruana"],
+        avatar: "🧠",
+        warna: "#00f2fe",
+        deskripsi: "Peringkat dunia — tidak kenal ampun",
+        movetime: 2000,
+        blunderChance: 0, // Tidak pernah blunder
+
+        komentarSkak:     ["Check.", "Inevitable.", "Your king is exposed."],
+        komentarMenang:   ["Flawless.", "Study more openings.", "This was decided on move 3."],
+        komentarKalah:    ["Interesting. You played well.", "A rare result.", "I underestimated you."],
+        komentarLangkah:  ["Calculating...", "Optimal.", "As expected.", "Forced.", "Only move."],
+    }
+};
+
+// State karakter yang sedang aktif
+let karakterAktif   = null;
+let namaKarakterAktif = "";
+let _intervalKomentar = null;
+
+// ── Pilih karakter random sesuai level ──
+function piliKarakter(levelAI) {
+    const data  = karakterAI[levelAI] || karakterAI["3"];
+    const nama  = data.nama[Math.floor(Math.random() * data.nama.length)];
+    karakterAktif     = data;
+    namaKarakterAktif = nama;
+    return { ...data, namaAktif: nama };
+}
+
+// ── Tampilkan kartu karakter di pojok kanan atas board ──
+function tampilKartuKarakter(levelAI) {
+    // Hapus kartu lama
+    const lama = document.getElementById('kartu-karakter-ai');
+    if (lama) lama.remove();
+
+    const k = piliKarakter(levelAI);
+
+    const kartu = document.createElement('div');
+    kartu.id    = 'kartu-karakter-ai';
+    kartu.innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:22px;">${k.avatar}</span>
+            <div>
+                <div style="font-weight:900;font-size:13px;color:${k.warna};
+                            letter-spacing:0.5px;">${k.namaAktif}</div>
+                <div style="font-size:10px;color:#aaa;">${k.deskripsi}</div>
+            </div>
+        </div>
+        <div id="balon-komentar-ai" style="
+            display:none;
+            margin-top:8px;
+            background:rgba(255,255,255,0.07);
+            border-left:3px solid ${k.warna};
+            padding:5px 8px;
+            border-radius:0 6px 6px 0;
+            font-size:11px;
+            color:#ddd;
+            font-style:italic;
+            animation: fadeInUp 0.3s ease;
+        "></div>
+    `;
+
+    // Style kartu — tidak lagi absolute, tapi block biasa
+    kartu.style.cssText = `
+        background: rgba(15,17,23,0.92);
+        border: 1px solid ${k.warna}66;
+        border-radius: 10px;
+        padding: 10px 14px;
+        margin-bottom: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    `;
+
+    // Pasang SEBELUM timer-wrapper-top
+    const timerAtas = document.getElementById('timer-wrapper-top');
+    if (timerAtas) {
+        timerAtas.parentNode.insertBefore(kartu, timerAtas);
+    } else {
+        // Fallback: pasang di awal arena
+        const arena = document.getElementById('arena-pertandingan');
+        if (arena) arena.insertBefore(kartu, arena.firstChild);
+    }
+}
+
+// ── Tampilkan komentar AI di balon ──
+function komentarAI(tipe) {
+    if (!karakterAktif) return;
+    const daftar = karakterAktif['komentar' + tipe] || karakterAktif.komentarLangkah;
+    const teks   = daftar[Math.floor(Math.random() * daftar.length)];
+
+    const balon = document.getElementById('balon-komentar-ai');
+    if (!balon) return;
+
+    balon.textContent = '"' + teks + '"';
+    balon.style.display = 'block';
+
+    clearTimeout(balon._t);
+    balon._t = setTimeout(() => { balon.style.display = 'none'; }, 2800);
+}
+
+// ── Sembunyikan kartu karakter (saat lobby / puzzle) ──
+function sembunyikanKartuKarakter() {
+    clearInterval(_intervalKomentar);
+    const kartu = document.getElementById('kartu-karakter-ai');
+    if (kartu) kartu.remove();
+    karakterAktif     = null;
+    namaKarakterAktif = "";
+}
+
+// ============================================================
+// INISIALISASI STOCKFISH
 try {
     aiEngine = new Worker("JS/stockfish.js");
 } catch (e) {
@@ -48,6 +198,11 @@ if (aiEngine) {
             // Mode AI normal
             tukarArahJam();
             updateStatus();
+
+            // Komentar AI sesuai situasi
+            if (game.in_checkmate())     komentarAI('Menang');
+            else if (game.in_check())    komentarAI('Skak');
+            else                         komentarAI('Langkah');
         }
     };
 }
@@ -260,9 +415,25 @@ function suksesMelangkah() {
 function pemicuLangkahAI() {
     if (!aiEngine) return;
     const levelAI = document.getElementById("aiLevel")?.value || "3";
+    const k = karakterAI[levelAI] || karakterAI["3"];
+
+    // Blunder: level pemula/semi-pro sesekali langkah random
+    if (k.blunderChance > 0 && Math.random() < k.blunderChance) {
+        const moves = game.moves();
+        if (moves.length) {
+            const moveAcak = moves[Math.floor(Math.random() * moves.length)];
+            game.move(moveAcak);
+            if (board) board.position(game.fen());
+            komentarAI('Langkah');
+            tukarArahJam();
+            updateStatus();
+            return;
+        }
+    }
+
     aiEngine.postMessage("setoption name Skill Level value " + levelAI);
     aiEngine.postMessage("position fen " + game.fen());
-    aiEngine.postMessage("go movetime 1000");
+    aiEngine.postMessage("go movetime " + k.movetime);
 }
 
 // AI balas di mode puzzle — pakai level sesuai pilihan, waktu lebih singkat
@@ -417,6 +588,10 @@ function updateStatus() {
             kalimatEjekan = turnSekarang === 'w'
                 ? "Aduh... Otakmu perlu diservis! 🤫<br><span style='font-size:16px; color:#aaa;'>Kalah kok sama Komputer...</span>"
                 : "🎉 LUAR BIASA! Kamu berhasil mengalahkan komputer AI ini! 🧠💥";
+
+            // Komentar karakter saat game selesai
+            if (turnSekarang === 'w') komentarAI('Menang');  // AI menang
+            else                      komentarAI('Kalah');   // AI kalah
         } else if (mode === 'friend') {
             const sayaKalah = (turnSekarang === peranSaya);
             kalimatEjekan = sayaKalah

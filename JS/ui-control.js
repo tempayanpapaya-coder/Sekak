@@ -94,6 +94,10 @@ function mulaiPermainanNyata() {
         // VS AI
         const warnaPilihan = document.getElementById("playerColor").value;
 
+        // Tampilkan kartu karakter AI
+        const levelAI = document.getElementById("aiLevel").value;
+        tampilKartuKarakter(levelAI);
+
         if (warnaPilihan === "black") {
             if (board) board.orientation("black");
             if (wadahAtas && wadahBawah) {
@@ -123,6 +127,9 @@ function mulaiPermainanNyata() {
 
 // --- RESET GAME ---
 function resetGame() {
+    // Sembunyikan kartu karakter AI (hanya relevan di mode AI)
+    sembunyikanKartuKarakter();
+
     document.getElementById("arena-pertandingan").style.display = "none";
     document.getElementById("timeLimit").disabled = false;
 
